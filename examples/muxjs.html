@@ -1,0 +1,78 @@
+<html>
+  <head>
+    <title>Basic Transmuxer Test</title>
+  </head>
+  <body>
+    <video controls width="80%"></video>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mux.js/5.10.0/mux.min.js"></script>
+    <script>
+      // Create array of TS files to play
+      segments = [
+        "https://vod.ottclouds.com/vods/9999/CcRxJOQgiwAFdpmYc7oezZM4Tvah7Lmp4/1080/video_0000001.ts",
+        "https://vod.ottclouds.com/vods/9999/CcRxJOQgiwAFdpmYc7oezZM4Tvah7Lmp4/1080/video_0000002.ts",
+        "https://vod.ottclouds.com/vods/9999/CcRxJOQgiwAFdpmYc7oezZM4Tvah7Lmp4/1080/video_0000003.ts",
+        "https://vod.ottclouds.com/vods/9999/CcRxJOQgiwAFdpmYc7oezZM4Tvah7Lmp4/1080/video_0000004.ts",
+        "https://vod.ottclouds.com/vods/9999/CcRxJOQgiwAFdpmYc7oezZM4Tvah7Lmp4/1080/video_0000005.ts",
+      ];
+
+      // Replace this value with your files codec info
+      mime = 'video/mp4; codecs="mp4a.40.2,avc1.64001f"';
+
+      let mediaSource = new MediaSource();
+      let transmuxer = new muxjs.mp4.Transmuxer();
+
+      video = document.querySelector('video');
+      video.src = URL.createObjectURL(mediaSource);
+      mediaSource.addEventListener("sourceopen", appendFirstSegment);
+
+      function appendFirstSegment(){
+        if (segments.length == 0){
+          return;
+        }
+
+        URL.revokeObjectURL(video.src);
+        sourceBuffer = mediaSource.addSourceBuffer(mime);
+        sourceBuffer.addEventListener('updateend', appendNextSegment);
+
+        transmuxer.on('data', (segment) => {
+          let data = new Uint8Array(segment.initSegment.byteLength + segment.data.byteLength);
+          data.set(segment.initSegment, 0);
+          data.set(segment.data, segment.initSegment.byteLength);
+          console.log(muxjs.mp4.tools.inspect(data));
+          sourceBuffer.appendBuffer(data);
+          // reset the 'data' event listener to just append (moof/mdat) boxes to the Source Buffer
+          transmuxer.off('data');
+        })
+
+        fetch(segments.shift()).then((response)=>{
+          return response.arrayBuffer();
+        }).then((response)=>{
+          transmuxer.push(new Uint8Array(response));
+          transmuxer.flush();
+        })
+      }
+
+      function appendNextSegment(){
+        transmuxer.on('data', (segment) =>{
+          sourceBuffer.appendBuffer(new Uint8Array(segment.data));
+          transmuxer.off('data');
+        })
+
+        if (segments.length == 0){
+          // notify MSE that we have no more segments to append.
+          mediaSource.endOfStream();
+        }
+
+        segments.forEach((segment) => {
+          // fetch the next segment from the segments array and pass it into the transmuxer.push method
+          fetch(segments.shift()).then((response)=>{
+            return response.arrayBuffer();
+          }).then((response)=>{
+            transmuxer.push(new Uint8Array(response));
+            transmuxer.flush();
+          })
+        })
+      }
+    </script>
+  </body>
+</html>
