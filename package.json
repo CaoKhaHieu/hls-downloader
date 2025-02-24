@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "node index.js",
+    "dev": "webpack serve --mode development",
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "webpack"
   },
@@ -12,12 +12,14 @@
   "license": "ISC",
   "dependencies": {
     "axios": "^1.7.9",
+    "html-webpack-plugin": "^5.6.3",
     "idb": "^8.0.2",
     "m3u8-parser": "^7.2.0",
     "path": "^0.12.7",
     "webpack": "^5.98.0"
   },
   "devDependencies": {
-    "webpack-cli": "^6.0.1"
+    "webpack-cli": "^6.0.1",
+    "webpack-dev-server": "^5.2.0"
   }
 }
