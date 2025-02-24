@@ -6,4 +6,17 @@ import HLSDownloader from './lib/HLSDownloader.js';
   const downloader = new HLSDownloader({ url: url, idVideoIDB: 1 });
   console.log({ downloader })
   downloader.start();
+
+  document.getElementById('pause').addEventListener('click', () => {
+    downloader.pause();
+  });
+
+  document.getElementById('resume').addEventListener('click', () => {
+    downloader.resume();
+  });
+
+  document.getElementById('cancel').addEventListener('click', () => {
+    downloader.cancel();
+  });
+
 })();
