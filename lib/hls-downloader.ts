@@ -36,7 +36,6 @@ class HLSDownloader {
 
   async init() {
     await IndexedDBService.init();
-    console.log("HLSDownloader initialized");
   }
 
   // ensure init promise is resolved before start download
@@ -46,7 +45,7 @@ class HLSDownloader {
 
   // start download
   async start() {
-    console.log(`Start downloading: ${this.url}`);
+    console.log('Start downloading');
     await this.ensureInit();
     await this.downloadManager.start(
       this.url,
@@ -63,7 +62,7 @@ class HLSDownloader {
 
   // pause download
   async pause() {
-    console.log(`Pause downloading`);
+    console.log('Pause downloading');
     await this.ensureInit();
     await this.downloadManager.pause(this.idVideoIDB);
     if (this.onPause) {
@@ -73,7 +72,7 @@ class HLSDownloader {
 
   // resume download
   async resume() {
-    console.log(`Resume downloading`);
+    console.log('Resume downloading');
     await this.ensureInit();
     await this.downloadManager.resume(this.idVideoIDB);
     if (this.onResume) {
@@ -84,7 +83,7 @@ class HLSDownloader {
   // cancel download
   async cancel() {
     await this.ensureInit();
-    console.log(`Cancel downloading`);
+    console.log('Cancel downloading');
     await this.downloadManager.cancel(this.idVideoIDB);
     if (this.onCancel) {
       this.onCancel();
@@ -93,7 +92,6 @@ class HLSDownloader {
 
   async deleteVideo(idVideoIDB: string) {
     await this.ensureInit();
-    console.log(`Delete video`);
     await this.downloadManager.deleteVideo(idVideoIDB);
     if (this.onDelete) {
       this.onDelete();

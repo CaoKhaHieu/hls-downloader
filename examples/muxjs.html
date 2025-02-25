@@ -38,7 +38,6 @@
           let data = new Uint8Array(segment.initSegment.byteLength + segment.data.byteLength);
           data.set(segment.initSegment, 0);
           data.set(segment.data, segment.initSegment.byteLength);
-          console.log(muxjs.mp4.tools.inspect(data));
           sourceBuffer.appendBuffer(data);
           // reset the 'data' event listener to just append (moof/mdat) boxes to the Source Buffer
           transmuxer.off('data');
