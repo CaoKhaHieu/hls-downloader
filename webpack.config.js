@@ -2,12 +2,11 @@ const path = require("path");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 
 module.exports = {
-  entry: "./index.js",
+  entry: "./index.ts",
   output: {
     path: path.resolve(__dirname, "dist"),
     filename: "hls-downloader.js",
   },
-  mode: "production",
   module: {
     rules: [
       {
@@ -33,4 +32,7 @@ module.exports = {
     hot: true,
   },
   devtool: "source-map",
+  resolve: {
+    extensions: [".ts", ".js"],
+  },
 };

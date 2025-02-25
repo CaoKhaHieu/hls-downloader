@@ -1,7 +1,21 @@
 import DownloadManager from "./download-manager.js";
-import indexedDBService from "./indexeddb-service.ts";
+import IndexedDBService from "./indexeddb-service";
 
 class HLSDownloader {
+  private url: string;
+  private idVideoIDB: string;
+  private thumbnail: string;
+  private metadata: any;
+  private downloadManager: any;
+  private initPromise: Promise<void>;
+  private onSuccess: (data: any) => void;
+  private onProgress: (data: any) => void;
+  private onPause: (data: any) => void;
+  private onResume: (data: any) => void;
+  private onCancel: (data: any) => void;
+  private onDelete: (data: any) => void;
+  private onDeleteAll: () => void;
+
   constructor({
     url,
     idVideoIDB,
@@ -14,6 +28,18 @@ class HLSDownloader {
     onCancel,
     onDelete,
     onDeleteAll
+  }: {
+    url: string;
+    idVideoIDB: string;
+    thumbnail: string;
+    metadata: any;
+    onSuccess: (data: any) => void;
+    onProgress: (data: any) => void;
+    onPause: (data: any) => void;
+    onResume: (data: any) => void;
+    onCancel: (data: any) => void;
+    onDelete: (data: any) => void;
+    onDeleteAll: () => void;
   }) {
     this.url = url;
     this.idVideoIDB = idVideoIDB;
@@ -33,7 +59,7 @@ class HLSDownloader {
   }
 
   async init() {
-    await indexedDBService.init();
+    await IndexedDBService.init();
     console.log("HLSDownloader initialized");
   }
 
@@ -89,7 +115,7 @@ class HLSDownloader {
     }
   }
 
-  async deleteVideo(idVideoIDB) {
+  async deleteVideo(idVideoIDB: string) {
     await this.ensureInit();
     console.log(`Delete video`);
     await this.downloadManager.deleteVideo(idVideoIDB);
@@ -99,13 +125,13 @@ class HLSDownloader {
   }
 
   // get video
-  async getVideo(idVideoIDB) {
+  async getVideo(idVideoIDB: string) {
     await this.ensureInit();
     return await this.downloadManager.getVideo(idVideoIDB);
   }
 
   // get thumbnail video downloaded
-  async getThumbnailVideoDownloaded(idVideoIDB) {
+  async getThumbnailVideoDownloaded(idVideoIDB: string) {
     await this.ensureInit();
     return await this.downloadManager.getThumbnailVideoDownloaded(idVideoIDB);
   }

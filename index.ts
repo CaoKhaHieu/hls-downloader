@@ -1,7 +1,7 @@
-import HLSDownloader from './lib/hls-downloader.js';
+import HLSDownloader from './lib/hls-downloader';
 import muxjs from 'mux.js';
 
-const mergeListArrayBuffer = (myArrays) => {
+const mergeListArrayBuffer = (myArrays: Uint8Array[]) => {
   let length = 0;
   myArrays.forEach(item => {
     length += item.length;
@@ -17,14 +17,15 @@ const mergeListArrayBuffer = (myArrays) => {
 };
 
 (async () => {
+  const url0 = "https://vod.ottclouds.com/vods/9999/1eSLicF5KckJbtcfbrXl_MEDIA_20250106-230139_1736204499007_bTABcQmp4/playlist.m3u8"
   const url1 = "https://vtvgo-vods.vtvdigital.vn/RTJC-PMXuacVrExErCl_Tw/1740628543/vod/20250222/nong-trua-22t2.mp4/index.m3u8"
   const url2 = "https://vtvgo-vods.vtvdigital.vn/of3wkYPedOwjEp6hK_77Sg/1740628756/vod/20250222/cd.mp4/index.m3u8"
   const url3 = "https://bitdash-a.akamaihd.net/content/sintel/hls/playlist.m3u8"
   const url4 = "https://bitdash-a.akamaihd.net/content/MI201109210084_1/m3u8s/f08e80da-bf1d-4e3d-8899-f0f6155f6efa.m3u8"
 
   const downloader = new HLSDownloader({
-    url: url1,
-    idVideoIDB: 1,
+    url: url0,
+    idVideoIDB: '1',
     thumbnail: 'https://picsum.photos/536/354',
     metadata: {
       title: 'The Lorem Ipsum for photos.',
@@ -54,64 +55,30 @@ const mergeListArrayBuffer = (myArrays) => {
       console.log('onDeleteAll');
     }
   });
-  const downloader2 = new HLSDownloader({
-    url: url2,
-    idVideoIDB: 2,
-    thumbnail: 'https://picsum.photos/536/354',
-    metadata: {
-      title: 'The Lorem Ipsum for photos.',
-      description: 'The Lorem Ipsum for photos.',
-      category: 'The Lorem Ipsum for photos.',
-      tags: ['video', 'hls', 'download'],
-    },
-    onSuccess: (data) => {
-      console.log('onSuccess', data);
-    },
-    onProgress: (data) => {
-      console.log('onProgress', data);
-    },
-    onPause: (data) => {
-      console.log('onPause', data);
-    },
-    onResume: (data) => {
-      console.log('onResume', data);
-    },
-    onCancel: (data) => {
-      console.log('onCancel', data);
-    },
-    onDelete: (data) => {
-      console.log('onDelete', data);
-    }
-  });
+
+  const startButton = document.getElementById('start');
+  const pauseButton = document.getElementById('pause');
+  const resumeButton = document.getElementById('resume');
+  const cancelButton = document.getElementById('cancel');
+  const deleteButton = document.getElementById('delete');
+  const deleteAllButton = document.getElementById('delete-all');
+
+  if (!startButton || !pauseButton || !resumeButton || !cancelButton || 
+      !deleteButton || !deleteAllButton) {
+    console.error('Required DOM elements not found');
+    return;
+  }
 
   // add event listener to start download
-  document.getElementById('start').addEventListener('click', () => {
-    downloader.start();
-    downloader2.start();
-  });
-
-  document.getElementById('pause').addEventListener('click', () => {
-    downloader.pause();
-  });
-
-  document.getElementById('resume').addEventListener('click', () => {
-    downloader.resume();
-  });
-
-  document.getElementById('cancel').addEventListener('click', () => {
-    downloader.cancel();
-  });
-
-  document.getElementById('delete').addEventListener('click', () => {
-    downloader.deleteVideo(1);
-  });
-
-  document.getElementById('delete-all').addEventListener('click', () => {
-    downloader.deleteAllVideos();
-  });
+  startButton.addEventListener('click', () => downloader.start());
+  pauseButton.addEventListener('click', () => downloader.pause());
+  resumeButton.addEventListener('click', () => downloader.resume());
+  cancelButton.addEventListener('click', () => downloader.cancel());
+  deleteButton.addEventListener('click', () => downloader.deleteVideo('1')); // Changed to string
+  deleteAllButton.addEventListener('click', () => downloader.deleteAllVideos());
 
   // get videos
-  const video = await downloader.getVideo(1);
+  const video = await downloader.getVideo('1');
   const videos = await downloader.getAllVideos();
   if (!video) {
     return;
@@ -124,17 +91,17 @@ const mergeListArrayBuffer = (myArrays) => {
 
   const mergedArray = mergeListArrayBuffer([...video.arr]);
 
-  let videoElement = document.querySelector('video');
+  const videoElement = document.querySelector('video') as HTMLVideoElement;
   videoElement.src = URL.createObjectURL(mediaSource);
   mediaSource.addEventListener('sourceopen', () => appendSegments(mergedArray));
 
-  const appendSegments = (data) => {
+  const appendSegments = (data: Uint8Array) => {
     URL.revokeObjectURL(videoElement.src);
     const sourceBuffer = mediaSource.addSourceBuffer(mime);
     sourceBuffer.addEventListener('updateend', () => {
       mediaSource.endOfStream();
     });
-    transmuxer.on('data', (segment) => {
+    transmuxer.on('data', (segment: any) => {
       const data = new Uint8Array(segment.initSegment.byteLength + segment.data.byteLength);
       data.set(segment.initSegment, 0);
       data.set(segment.data, segment.initSegment.byteLength);
@@ -146,7 +113,7 @@ const mergeListArrayBuffer = (myArrays) => {
   };
 
   // test get thumbnail video downloaded and preview
-  const thumbnail = await downloader.getThumbnailVideoDownloaded(1);
-  const thumbnailElement = document.querySelector('.thumbnail');
+  const thumbnailElement = document.querySelector('.thumbnail') as HTMLImageElement;
+  const thumbnail = await downloader.getThumbnailVideoDownloaded('1');
   thumbnailElement.src = thumbnail;
 })();
