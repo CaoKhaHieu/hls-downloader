@@ -2,11 +2,12 @@
   "name": "hls-downloader",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "lib/hls-downloader.ts",
+  "types": "lib/hls-downloader.d.ts",
   "scripts": {
     "dev": "webpack serve --mode development",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "webpack"
+    "build": "webpack --config webpack.config-lib.js"
   },
   "author": "",
   "license": "ISC",

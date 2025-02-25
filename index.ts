@@ -33,23 +33,23 @@ const mergeListArrayBuffer = (myArrays: Uint8Array[]) => {
       category: 'The Lorem Ipsum for photos.',
       tags: ['video', 'hls', 'download'],
     },
-    onSuccess: (data) => {
-      console.log('onSuccess', data);
+    onSuccess: () => {
+      console.log('onSuccess');
     },
     onProgress: (data) => {
       console.log('onProgress', data);
     },
-    onPause: (data) => {
-      console.log('onPause', data);
+    onPause: () => {
+      console.log('onPause');
     },
-    onResume: (data) => {
-      console.log('onResume', data);
+    onResume: () => {
+      console.log('onResume');
     },
-    onCancel: (data) => {
-      console.log('onCancel', data);
+    onCancel: () => {
+      console.log('onCancel');
     },
-    onDelete: (data) => {
-      console.log('onDelete', data);
+    onDelete: () => {
+      console.log('onDelete');
     },
     onDeleteAll: () => {
       console.log('onDeleteAll');

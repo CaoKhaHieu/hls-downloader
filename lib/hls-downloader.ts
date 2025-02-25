@@ -1,5 +1,6 @@
-import DownloadManager from "./download-manager.js";
+import DownloadManager from "./download-manager";
 import IndexedDBService from "./indexeddb-service";
+import { HLSDownloadCallback, HLSOnProgressCallback, HLSDownloaderOptions } from "./hls-downloader.d";
 
 class HLSDownloader {
   private url: string;
@@ -8,51 +9,26 @@ class HLSDownloader {
   private metadata: any;
   private downloadManager: any;
   private initPromise: Promise<void>;
-  private onSuccess: (data: any) => void;
-  private onProgress: (data: any) => void;
-  private onPause: (data: any) => void;
-  private onResume: (data: any) => void;
-  private onCancel: (data: any) => void;
-  private onDelete: (data: any) => void;
-  private onDeleteAll: () => void;
+  private onSuccess: HLSDownloadCallback;
+  private onProgress: HLSOnProgressCallback;
+  private onPause: HLSDownloadCallback;
+  private onResume: HLSDownloadCallback;
+  private onCancel: HLSDownloadCallback;
+  private onDelete: HLSDownloadCallback;
+  private onDeleteAll: HLSDownloadCallback;
 
-  constructor({
-    url,
-    idVideoIDB,
-    thumbnail,
-    metadata,
-    onSuccess,
-    onProgress,
-    onPause,
-    onResume,
-    onCancel,
-    onDelete,
-    onDeleteAll
-  }: {
-    url: string;
-    idVideoIDB: string;
-    thumbnail: string;
-    metadata: any;
-    onSuccess: (data: any) => void;
-    onProgress: (data: any) => void;
-    onPause: (data: any) => void;
-    onResume: (data: any) => void;
-    onCancel: (data: any) => void;
-    onDelete: (data: any) => void;
-    onDeleteAll: () => void;
-  }) {
-    this.url = url;
-    this.idVideoIDB = idVideoIDB;
-    this.thumbnail = thumbnail;
-    this.metadata = metadata;
-
-    this.onSuccess = onSuccess;
-    this.onProgress = onProgress;
-    this.onPause = onPause;
-    this.onResume = onResume;
-    this.onCancel = onCancel;
-    this.onDelete = onDelete;
-    this.onDeleteAll = onDeleteAll;
+  constructor(options: HLSDownloaderOptions) {
+    this.url = options.url;
+    this.idVideoIDB = options.idVideoIDB;
+    this.thumbnail = options.thumbnail;
+    this.metadata = options.metadata;
+    this.onSuccess = options.onSuccess;
+    this.onProgress = options.onProgress;
+    this.onPause = options.onPause;
+    this.onResume = options.onResume;
+    this.onCancel = options.onCancel;
+    this.onDelete = options.onDelete;
+    this.onDeleteAll = options.onDeleteAll;
 
     this.downloadManager = new DownloadManager();
     this.initPromise = this.init();
@@ -81,7 +57,7 @@ class HLSDownloader {
       this.onDeleteAll,
     );
     if (this.onSuccess) {
-      this.onSuccess({ id: this.idVideoIDB });
+      this.onSuccess();
     }
   }
 
@@ -91,7 +67,7 @@ class HLSDownloader {
     await this.ensureInit();
     await this.downloadManager.pause(this.idVideoIDB);
     if (this.onPause) {
-      this.onPause({ id: this.idVideoIDB });
+      this.onPause();
     }
   }
 
@@ -101,7 +77,7 @@ class HLSDownloader {
     await this.ensureInit();
     await this.downloadManager.resume(this.idVideoIDB);
     if (this.onResume) {
-      this.onResume({ id: this.idVideoIDB });
+      this.onResume();
     }
   }
 
@@ -111,7 +87,7 @@ class HLSDownloader {
     console.log(`Cancel downloading`);
     await this.downloadManager.cancel(this.idVideoIDB);
     if (this.onCancel) {
-      this.onCancel({ id: this.idVideoIDB });
+      this.onCancel();
     }
   }
 
@@ -120,7 +96,7 @@ class HLSDownloader {
     console.log(`Delete video`);
     await this.downloadManager.deleteVideo(idVideoIDB);
     if (this.onDelete) {
-      this.onDelete({ id: this.idVideoIDB });
+      this.onDelete();
     }
   }
 

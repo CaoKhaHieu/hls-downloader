@@ -1,11 +1,19 @@
 import axios from "axios";
 import { Parser } from "m3u8-parser";
-import { MAX_VIDEOS_DOWNLOADING } from "./constants.ts";
-import indexedDBService from "./indexeddb-service.ts";
+
+import { MAX_VIDEOS_DOWNLOADING } from "./constants";
+import indexedDBService from "./indexeddb-service";
 
 class DownloadManager {
+  private idVideoIDB: string;
+  private countDownload: number;
+  private progress: { [key: string]: number };
+  private videosWaiting: any[];
+  private infoVideoDownload: Record<string, any>;
+  private onProgress: (data: any) => void;
+
   constructor() {
-    this.idVideoIDB = null;
+    this.idVideoIDB = '1';
     this.onProgress = () => {};
 
     this.countDownload = 0;
@@ -14,7 +22,7 @@ class DownloadManager {
     this.infoVideoDownload = {};
   }
 
-  updateCountDownload = (action) => {
+  updateCountDownload = (action: 'RESET' | 'INCREASE' | 'DESCREASE') => {
     if (this.countDownload <= 0) {
       return;
     }
@@ -33,7 +41,7 @@ class DownloadManager {
   };
 
   // fetch thumbnail from url and return Uint8Array
-  async fetchThumbnail(url) {
+  async fetchThumbnail(url: string) {
     try {
       const response = await fetch(url);
       const arrayBuffer = await response.arrayBuffer();
@@ -45,18 +53,18 @@ class DownloadManager {
   }
 
   // get all segments from m3u8 url
-  async fetchM3u8Url(urlVideo) {
+  async fetchM3u8Url(urlVideo: string) {
     const position = urlVideo.indexOf(".m3u8");
     const baseURL = urlVideo.substring(0, urlVideo.lastIndexOf("/", position));
 
     const response = await axios.get(urlVideo);
     const playlistContent = response.data;
 
-    const parser = new Parser();
+    const parser: any = new Parser();
     parser.push(playlistContent);
     parser.end();
 
-    if (parser.manifest?.playlists?.length > 0) {
+    if (parser.manifest.playlists?.length && parser.manifest.playlists.length > 0) {
       const m3u8Endpoint = parser.manifest?.playlists[0]?.uri;
       const m3u8Url = `${baseURL}/${m3u8Endpoint}`;
 
@@ -79,7 +87,7 @@ class DownloadManager {
     }
 
     if (parser.manifest.segments.length > 0) {
-      const fullUrls = parser.manifest.segments.map((segment) => {
+      const fullUrls = parser.manifest.segments.map((segment: any) => {
         const segmentUri = baseURL + "/" + segment.uri;
         return segmentUri;
       });
@@ -88,7 +96,7 @@ class DownloadManager {
   }
 
   // create a promise fetch all segments from url
-  async fetchSegments(tsUrls) {
+  async fetchSegments(tsUrls: string[]) {
     for (const url of tsUrls) {
       try {
         await this.fetchChunk(url);
@@ -99,7 +107,7 @@ class DownloadManager {
   }
 
   // fetch segment from url and return Uint8Array
-  async fetchChunk(url) {
+  async fetchChunk(url: string) {
     // check if the user is offline or the video is paused or the number of videos being downloaded is greater than the maximum
     if (!navigator.onLine || !this.infoVideoDownload[this.idVideoIDB]) {
       return;
@@ -138,7 +146,7 @@ class DownloadManager {
   }
 
   // start download
-  async start(url, idVideoIDB, thumbnail, metadata, onProgress = {}) {
+  async start(url: string, idVideoIDB: string, thumbnail: string, metadata: any, onProgress: () => void) {
     // init info video download
     this.infoVideoDownload[idVideoIDB] = {
       url,
@@ -152,9 +160,7 @@ class DownloadManager {
     this.onProgress = onProgress;
 
     // init progress
-    this.progress[idVideoIDB] = {
-      idVideoIDB: 0,
-    };
+    this.progress[idVideoIDB] = 0;
 
     // save thumbnail to indexedDB
     if (thumbnail) {
@@ -176,6 +182,9 @@ class DownloadManager {
     this.updateCountDownload("INCREASE");
 
     const tsUrls = await this.fetchM3u8Url(url);
+    if (!tsUrls) {
+      throw new Error("No segments found");
+    }
 
     this.infoVideoDownload[idVideoIDB].totalSegments = tsUrls.length;
     this.infoVideoDownload[idVideoIDB].segments = tsUrls;
@@ -187,7 +196,7 @@ class DownloadManager {
   }
 
   // pause download
-  async pause(idVideoIDB) {
+  async pause(idVideoIDB: string) {
     // if the number of segments downloaded is equal to the total number of segments, return
     if (this.infoVideoDownload[idVideoIDB].arr.length === this.infoVideoDownload[idVideoIDB].totalSegments) {
       return;
@@ -199,7 +208,7 @@ class DownloadManager {
   }
 
   // resume download
-  async resume(idVideoIDB) {
+  async resume(idVideoIDB: string) {
     // if the number of segments downloaded is equal to the total number of segments, return
     if (this.infoVideoDownload[idVideoIDB].arr.length === this.infoVideoDownload[idVideoIDB].totalSegments) {
       return;
@@ -211,7 +220,7 @@ class DownloadManager {
   }
 
   // cancel download
-  async cancel(idVideoIDB) {
+  async cancel(idVideoIDB: string) {
     this.infoVideoDownload[idVideoIDB].isPaused = true;
     delete this.infoVideoDownload[idVideoIDB];
     this.updateCountDownload('DESCREASE');
@@ -219,17 +228,17 @@ class DownloadManager {
   }
 
   // delete video
-  async deleteVideo(idVideoIDB) {
+  async deleteVideo(idVideoIDB: string) {
     await indexedDBService.delete(idVideoIDB);
   }
 
   // get video
-  async getVideo(idVideoIDB) {
+  async getVideo(idVideoIDB: string) {
     return await indexedDBService.get(idVideoIDB);
   }
 
   // get thumbnail video downloaded
-  async getThumbnailVideoDownloaded(idVideoIDB) {
+  async getThumbnailVideoDownloaded(idVideoIDB: string) {
     const video = await indexedDBService.get(idVideoIDB);
     if (!video?.thumbnail) {
       return null;
