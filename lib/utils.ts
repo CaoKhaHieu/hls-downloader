@@ -1,5 +1,5 @@
 class ArrayBufferMerger {
-  static merge(myArrays) {
+  static merge(myArrays: Uint8Array[]): Uint8Array {
     let length = myArrays.reduce((acc, item) => acc + item.length, 0);
     let mergedArray = new Uint8Array(length);
 

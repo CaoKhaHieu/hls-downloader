@@ -1,13 +1,16 @@
 import { openDB } from 'idb';
 
 class IndexedDBService {
-  constructor(dbName = 'hls-downloader', storeName = 'video', dbVersion = 1) {
+  private static instance: IndexedDBService;
+  private db: any;
+  private dbName: string = 'hls-downloader';
+  private storeName: string = 'video';
+  private dbVersion: number = 1;
+
+  constructor() {
     if (!IndexedDBService.instance) {
       this.db = null;
-      this.dbName = dbName;
-      this.storeName = storeName;
-      this.dbVersion = dbVersion;
-      IndexedDBService.instance = this; // Lưu instance vào static property
+      IndexedDBService.instance = this;
     }
     return IndexedDBService.instance;
   }
@@ -27,7 +30,7 @@ class IndexedDBService {
     }
   }
 
-  async save(key, data) {
+  async save(key: string, data: any) {
     if (!this.db) {
       console.warn('Database is not initialized');
       return;
@@ -42,7 +45,7 @@ class IndexedDBService {
     }
   }
 
-  async delete(key) {
+  async delete(key: string) {
     if (!this.db) {
       console.warn('Database is not initialized');
       return;
@@ -57,7 +60,7 @@ class IndexedDBService {
     }
   }
 
-  async get(key) {
+  async get(key: string) {
     if (!this.db) {
       console.warn('Database is not initialized');
       return null;

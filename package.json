@@ -17,6 +17,7 @@
     "m3u8-parser": "^7.2.0",
     "mux.js": "^6.3.0",
     "path": "^0.12.7",
+    "ts-loader": "^9.5.2",
     "webpack": "^5.98.0"
   },
   "devDependencies": {

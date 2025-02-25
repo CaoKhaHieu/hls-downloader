@@ -8,6 +8,15 @@ module.exports = {
     filename: "hls-downloader.js",
   },
   mode: "production",
+  module: {
+    rules: [
+      {
+        test: /\.ts?$/,
+        use: 'ts-loader',
+        exclude: /node_modules/,
+      },
+    ],
+  },
   plugins: [
     new HtmlWebpackPlugin({
       template: "./index.html", // Tạo HTML từ template này

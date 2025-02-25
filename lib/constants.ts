@@ -1,1 +1,1 @@
-export const MAX_VIDEOS_DOWNLOADING = 1;
+export const MAX_VIDEOS_DOWNLOADING: number = 1;
