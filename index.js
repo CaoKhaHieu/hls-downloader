@@ -26,7 +26,6 @@ const mergeListArrayBuffer = (myArrays) => {
     url: url1,
     idVideoIDB: 1,
     thumbnail: 'https://picsum.photos/536/354',
-    subtitle: 'https://picsum.photos/536/354',
     metadata: {
       title: 'The Lorem Ipsum for photos.',
       description: 'The Lorem Ipsum for photos.',
@@ -59,7 +58,6 @@ const mergeListArrayBuffer = (myArrays) => {
     url: url2,
     idVideoIDB: 2,
     thumbnail: 'https://picsum.photos/536/354',
-    subtitle: 'https://picsum.photos/536/354',
     metadata: {
       title: 'The Lorem Ipsum for photos.',
       description: 'The Lorem Ipsum for photos.',

@@ -3,7 +3,7 @@
 #### Features
 
 - Download HLS Stream
-  + download, pause, resume, cancel, quality, subtitle
+  + download, pause, resume, cancel, quality
 
 - Play video offline wiht multiple video player
   + videojs
