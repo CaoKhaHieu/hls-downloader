@@ -9,6 +9,8 @@ class HLSDownloader {
   private metadata: any;
   private downloadManager: any;
   private initPromise: Promise<void>;
+  private indexedDBService: IndexedDBService;
+
   private onSuccess: HLSDownloadCallback;
   private onProgress: HLSOnProgressCallback;
   private onPause: HLSDownloadCallback;
@@ -31,11 +33,12 @@ class HLSDownloader {
     this.onDeleteAll = options.onDeleteAll;
 
     this.downloadManager = new DownloadManager();
+    this.indexedDBService = new IndexedDBService();
     this.initPromise = this.init();
   }
 
   async init() {
-    await IndexedDBService.init();
+    await this.indexedDBService.init();
   }
 
   // ensure init promise is resolved before start download

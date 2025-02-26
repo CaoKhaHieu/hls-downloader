@@ -8,11 +8,11 @@ class IndexedDBService {
   private dbVersion: number = 1;
 
   constructor() {
-    if (!IndexedDBService.instance) {
-      this.db = null;
-      IndexedDBService.instance = this;
+    if (IndexedDBService.instance) {
+      return IndexedDBService.instance;
     }
-    return IndexedDBService.instance;
+
+    IndexedDBService.instance = this;
   }
 
   async init() {
@@ -105,5 +105,4 @@ class IndexedDBService {
   }
 }
 
-const indexedDBService = new IndexedDBService();
-export default indexedDBService;
+export default IndexedDBService;

@@ -1,6 +1,17 @@
 type HLSDownloadCallback = () => void;
 type HLSOnProgressCallback = (data: any) => void;
 
+// Interface cho video download
+interface VideoDownload {
+  url: string;
+  isPaused: boolean;
+  arr: Uint8Array<ArrayBuffer>[];
+  totalSegments: number;
+  metadata: any;
+  thumbnail: string | Uint8Array<ArrayBuffer>;
+  segments: string[];
+}
+
 // Interface cho constructor parameters
 export interface HLSDownloaderOptions {
   url: string;

@@ -1,25 +1,27 @@
 import axios from "axios";
 import { Parser } from "m3u8-parser";
 
+import { VideoDownload } from "./hls-downloader.d";
 import { MAX_VIDEOS_DOWNLOADING } from "./constants";
-import indexedDBService from "./indexeddb-service";
+import IndexedDBService from "./indexeddb-service";
 
 class DownloadManager {
   private idVideoIDB: string;
   private countDownload: number;
   private progress: { [key: string]: number };
   private videosWaiting: any[];
-  private infoVideoDownload: Record<string, any>;
+  private infoVideoDownload: { [key: string]: VideoDownload };
+  private indexedDBService: IndexedDBService;
   private onProgress: (data: any) => void;
 
   constructor() {
     this.idVideoIDB = '1';
-    this.onProgress = () => {};
-
     this.countDownload = 0;
     this.progress = {};
     this.videosWaiting = [];
     this.infoVideoDownload = {};
+    this.indexedDBService = new IndexedDBService();
+    this.onProgress = () => {};
   }
 
   updateCountDownload = (action: 'RESET' | 'INCREASE' | 'DESCREASE') => {
@@ -141,7 +143,7 @@ class DownloadManager {
     if (currentProgress > 100) {
       return;
     }
-    await indexedDBService.save(this.idVideoIDB, this.infoVideoDownload[this.idVideoIDB]);
+    await this.indexedDBService.save(this.idVideoIDB, this.infoVideoDownload[this.idVideoIDB]);
     return;
   }
 
@@ -155,6 +157,7 @@ class DownloadManager {
       totalSegments: 0,
       thumbnail,
       metadata,
+      segments: [],
     };
     this.idVideoIDB = idVideoIDB;
     this.onProgress = onProgress;
@@ -165,11 +168,13 @@ class DownloadManager {
     // save thumbnail to indexedDB
     if (thumbnail) {
       const thumbnailUint8Array = await this.fetchThumbnail(thumbnail);
-      this.infoVideoDownload[idVideoIDB].thumbnail = thumbnailUint8Array;
+      if (thumbnailUint8Array) {
+        this.infoVideoDownload[idVideoIDB].thumbnail = thumbnailUint8Array;
+      }
     }
 
     // save info video download to indexedDB
-    await indexedDBService.save(idVideoIDB, this.infoVideoDownload[idVideoIDB]);
+    await this.indexedDBService.save(idVideoIDB, this.infoVideoDownload[idVideoIDB]);
 
     // check if the number of videos being downloaded is greater than the maximum
     if (this.countDownload >= MAX_VIDEOS_DOWNLOADING) {
@@ -190,7 +195,7 @@ class DownloadManager {
     this.infoVideoDownload[idVideoIDB].segments = tsUrls;
 
     // save info video download to indexedDB
-    await indexedDBService.save(idVideoIDB, this.infoVideoDownload[idVideoIDB]);
+    await this.indexedDBService.save(idVideoIDB, this.infoVideoDownload[idVideoIDB]);
 
     await this.fetchSegments(tsUrls);
   }
@@ -204,7 +209,7 @@ class DownloadManager {
     
     this.infoVideoDownload[idVideoIDB].isPaused = true;
     this.updateCountDownload('DESCREASE');
-    await indexedDBService.save(idVideoIDB, this.infoVideoDownload[idVideoIDB]);
+    await this.indexedDBService.save(idVideoIDB, this.infoVideoDownload[idVideoIDB]);
   }
 
   // resume download
@@ -224,22 +229,22 @@ class DownloadManager {
     this.infoVideoDownload[idVideoIDB].isPaused = true;
     delete this.infoVideoDownload[idVideoIDB];
     this.updateCountDownload('DESCREASE');
-    await indexedDBService.delete(idVideoIDB);
+    await this.indexedDBService.delete(idVideoIDB);
   }
 
   // delete video
   async deleteVideo(idVideoIDB: string) {
-    await indexedDBService.delete(idVideoIDB);
+    await this.indexedDBService.delete(idVideoIDB);
   }
 
   // get video
   async getVideo(idVideoIDB: string) {
-    return await indexedDBService.get(idVideoIDB);
+    return await this.indexedDBService.get(idVideoIDB);
   }
 
   // get thumbnail video downloaded
   async getThumbnailVideoDownloaded(idVideoIDB: string) {
-    const video = await indexedDBService.get(idVideoIDB);
+    const video = await this.indexedDBService.get(idVideoIDB);
     if (!video?.thumbnail) {
       return null;
     }
@@ -252,12 +257,12 @@ class DownloadManager {
 
   // get all videos
   async getAllVideos() {
-    return await indexedDBService.getAll();
+    return await this.indexedDBService.getAll();
   }
 
   // delete all videos
   async deleteAllVideos() {
-    return await indexedDBService.deleteAll();
+    return await this.indexedDBService.deleteAll();
   }
 }
 
