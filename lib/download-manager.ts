@@ -2,45 +2,24 @@ import axios from "axios";
 import { Parser } from "m3u8-parser";
 
 import { VideoDownload } from "./hls-downloader.d";
-import { MAX_VIDEOS_DOWNLOADING } from "./constants";
 import IndexedDBService from "./indexeddb-service";
 
 class DownloadManager {
   private idVideoIDB: string;
-  private countDownload: number;
   private progress: { [key: string]: number };
-  private videosWaiting: any[];
   private infoVideoDownload: { [key: string]: VideoDownload };
   private indexedDBService: IndexedDBService;
   private onProgress: (data: any) => void;
+  private onSuccess: () => void;
 
   constructor() {
     this.idVideoIDB = '1';
-    this.countDownload = 0;
     this.progress = {};
-    this.videosWaiting = [];
     this.infoVideoDownload = {};
     this.indexedDBService = new IndexedDBService();
     this.onProgress = () => {};
+    this.onSuccess = () => {};
   }
-
-  updateCountDownload = (action: 'RESET' | 'INCREASE' | 'DESCREASE') => {
-    if (this.countDownload <= 0) {
-      return;
-    }
-    if (action === "RESET") {
-      this.countDownload = 0;
-      return;
-    }
-    if (action === "INCREASE") {
-      this.countDownload = this.countDownload + 1;
-      return;
-    }
-    if (action === "DESCREASE") {
-      this.countDownload = this.countDownload - 1;
-      return;
-    }
-  };
 
   // fetch thumbnail from url and return Uint8Array
   async fetchThumbnail(url: string) {
@@ -99,6 +78,10 @@ class DownloadManager {
 
   // create a promise fetch all segments from url
   async fetchSegments(tsUrls: string[]) {
+    if (this.infoVideoDownload[this.idVideoIDB].arr.length > 0) {
+      tsUrls.splice(0, this.infoVideoDownload[this.idVideoIDB].arr.length);
+    }
+
     for (const url of tsUrls) {
       try {
         await this.fetchChunk(url);
@@ -117,13 +100,15 @@ class DownloadManager {
     if (this.infoVideoDownload[this.idVideoIDB].isPaused) {
       return;
     }
-    if (this.countDownload > MAX_VIDEOS_DOWNLOADING) {
-      return;
-    }
 
     // fetch segment from url
     const response = await (await fetch(url)).arrayBuffer();
     const chunkData = new Uint8Array(response);
+
+    // handle incase user fetch data successfully but user is cancel download
+    if (!this.infoVideoDownload[this.idVideoIDB]) {
+      return;
+    }
 
     // save chunk data to info video download
     this.infoVideoDownload[this.idVideoIDB].arr.push(chunkData);
@@ -139,6 +124,10 @@ class DownloadManager {
       this.onProgress({ id: this.idVideoIDB, progress: currentProgress });
     }
 
+    if (this.onSuccess && currentProgress === 100) {
+      this.onSuccess();
+    }
+
     // if the progress is greater than 100, return
     if (currentProgress > 100) {
       return;
@@ -148,7 +137,7 @@ class DownloadManager {
   }
 
   // start download
-  async start(url: string, idVideoIDB: string, thumbnail: string, metadata: any, onProgress: () => void) {
+  async start(url: string, idVideoIDB: string, thumbnail: string, metadata: any, onProgress: () => void, onSuccess: () => void) {
     // init info video download
     this.infoVideoDownload[idVideoIDB] = {
       url,
@@ -161,6 +150,7 @@ class DownloadManager {
     };
     this.idVideoIDB = idVideoIDB;
     this.onProgress = onProgress;
+    this.onSuccess = onSuccess;
 
     // init progress
     this.progress[idVideoIDB] = 0;
@@ -175,16 +165,6 @@ class DownloadManager {
 
     // save info video download to indexedDB
     await this.indexedDBService.save(idVideoIDB, this.infoVideoDownload[idVideoIDB]);
-
-    // check if the number of videos being downloaded is greater than the maximum
-    if (this.countDownload >= MAX_VIDEOS_DOWNLOADING) {
-      this.videosWaiting = [
-        ...this.videosWaiting,
-        this.infoVideoDownload[idVideoIDB],
-      ];
-      return;
-    }
-    this.updateCountDownload("INCREASE");
 
     const tsUrls = await this.fetchM3u8Url(url);
     if (!tsUrls) {
@@ -208,7 +188,6 @@ class DownloadManager {
     }
     
     this.infoVideoDownload[idVideoIDB].isPaused = true;
-    this.updateCountDownload('DESCREASE');
     await this.indexedDBService.save(idVideoIDB, this.infoVideoDownload[idVideoIDB]);
   }
 
@@ -220,15 +199,12 @@ class DownloadManager {
     }
     
     this.infoVideoDownload[idVideoIDB].isPaused = false;
-    this.updateCountDownload('INCREASE');
     await this.fetchSegments(this.infoVideoDownload[idVideoIDB].segments);
   }
 
   // cancel download
   async cancel(idVideoIDB: string) {
-    this.infoVideoDownload[idVideoIDB].isPaused = true;
     delete this.infoVideoDownload[idVideoIDB];
-    this.updateCountDownload('DESCREASE');
     await this.indexedDBService.delete(idVideoIDB);
   }
 

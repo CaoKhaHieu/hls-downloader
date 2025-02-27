@@ -56,11 +56,8 @@ class HLSDownloader {
       this.thumbnail,
       this.metadata,
       this.onProgress,
-      this.onDeleteAll,
+      this.onSuccess,
     );
-    if (this.onSuccess) {
-      this.onSuccess();
-    }
   }
 
   // pause download
