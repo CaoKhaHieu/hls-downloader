@@ -1,27 +1,23 @@
 const path = require("path");
-const HtmlWebpackPlugin = require("html-webpack-plugin");
 
 module.exports = {
-  entry: "./index.js",
+  entry: "./lib/index.ts",
   output: {
     path: path.resolve(__dirname, "dist"),
-    filename: "hls-downloader.js",
+    filename: "[name].js",
+    clean: true,
+  },
+  module: {
+    rules: [
+      {
+        test: /\.ts?$/,
+        use: 'ts-loader',
+        exclude: /node_modules/,
+      },
+    ],
+  },
+  resolve: {
+    extensions: [".ts", ".js"],
   },
   mode: "production",
-  plugins: [
-    new HtmlWebpackPlugin({
-      template: "./index.html", // Tạo HTML từ template này
-      filename: "index.html",
-    }),
-  ],
-  devServer: {
-    static: {
-      directory: path.join(__dirname, "dist"),
-    },
-    compress: true,
-    port: 3000,
-    open: true,
-    hot: true,
-  },
-  devtool: "source-map",
 };

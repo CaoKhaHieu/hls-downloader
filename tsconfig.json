@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "target": "es2016",
+    "module": "commonjs",
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "outDir": "./dist",
+    "rootDir": "./",
+    "allowJs": true,
+    "moduleResolution": "node",
+    "resolveJsonModule": true
+  },
+  "include": [
+    "lib/**/*",
+    "examples/index.ts",
+    "mux.js.d.ts",
+    "index.d.ts"
+],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
+}

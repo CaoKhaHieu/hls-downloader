@@ -3,10 +3,13 @@
 #### Features
 
 - Download HLS Stream
-  + download, pause, resume, cancel, quality, subtitle
+  + download, pause, resume, cancel, quality
 
 - Play video offline wiht multiple video player
   + videojs
   + hls.js
   + video.js
   + flv.js
+
+
+- note: reload, example, commitlint, prettier, eslint, readme.
