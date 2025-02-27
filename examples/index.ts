@@ -18,16 +18,14 @@ const mergeListArrayBuffer = (myArrays: Uint8Array[]) => {
 
 (async () => {
   const urls = [
-    "https://vod.ottclouds.com/vods/9999/1eSLicF5KckJbtcfbrXl_MEDIA_20250106-230139_1736204499007_bTABcQmp4/playlist.m3u8",
     "https://vtvgo-vods.vtvdigital.vn/RTJC-PMXuacVrExErCl_Tw/1740628543/vod/20250222/nong-trua-22t2.mp4/index.m3u8",
     "https://vtvgo-vods.vtvdigital.vn/of3wkYPedOwjEp6hK_77Sg/1740628756/vod/20250222/cd.mp4/index.m3u8",
     "https://bitdash-a.akamaihd.net/content/sintel/hls/playlist.m3u8",
     "https://bitdash-a.akamaihd.net/content/MI201109210084_1/m3u8s/f08e80da-bf1d-4e3d-8899-f0f6155f6efa.m3u8",
-    "https://vod.ottclouds.com/vods/9999/yErcTbh8ijsYaP9xk7Vf_MEDIA_20241213-000306_1734048186105_ZSuQC6mp4/playlist.m3u8",
   ];
 
   const downloader = new HLSDownloader({
-    url: urls[0],
+    url: urls[1],
     idVideoIDB: '1',
     thumbnail: 'https://picsum.photos/536/354',
     metadata: {
