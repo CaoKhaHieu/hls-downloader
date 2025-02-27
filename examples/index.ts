@@ -1,5 +1,4 @@
-import HLSDownloader from '../lib/hls-downloader';
-import HLSManager from '../lib/hls-manager';
+import { HLSDownloader, HLSManager } from '../lib/index';
 import muxjs from 'mux.js';
 
 const mergeListArrayBuffer = (myArrays: Uint8Array[]) => {

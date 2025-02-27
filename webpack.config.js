@@ -1,10 +1,7 @@
 const path = require("path");
 
 module.exports = {
-  entry: {
-    'hls-downloader': './lib/hls-downloader.ts',
-    'hls-manager': './lib/hls-manager.ts'
-  },
+  entry: "./lib/index.ts",
   output: {
     path: path.resolve(__dirname, "dist"),
     filename: "[name].js",
