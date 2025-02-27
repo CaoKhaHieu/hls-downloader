@@ -1,11 +1,14 @@
 const path = require("path");
-const HtmlWebpackPlugin = require("html-webpack-plugin");
 
 module.exports = {
-  entry: "./index.ts",
+  entry: {
+    'hls-downloader': './lib/hls-downloader.ts',
+    'hls-manager': './lib/hls-manager.ts'
+  },
   output: {
     path: path.resolve(__dirname, "dist"),
-    filename: "hls-downloader.js",
+    filename: "[name].js",
+    clean: true,
   },
   module: {
     rules: [
@@ -16,23 +19,8 @@ module.exports = {
       },
     ],
   },
-  plugins: [
-    new HtmlWebpackPlugin({
-      template: "./index.html",
-      filename: "index.html",
-    }),
-  ],
-  devServer: {
-    static: {
-      directory: path.join(__dirname, "dist"),
-    },
-    compress: true,
-    port: 3000,
-    open: true,
-    hot: true,
-  },
-  devtool: "source-map",
   resolve: {
     extensions: [".ts", ".js"],
   },
+  mode: "production",
 };

@@ -1,4 +1,5 @@
 import { openDB } from 'idb';
+import { VideoDownload } from '../../index.d';
 
 class IndexedDBService {
   private static instance: IndexedDBService;
@@ -30,7 +31,7 @@ class IndexedDBService {
     }
   }
 
-  async save(key: string, data: any) {
+  async save(key: string, data: VideoDownload) {
     if (!this.db) {
       console.warn('Database is not initialized');
       return;
@@ -84,7 +85,7 @@ class IndexedDBService {
       const tx = this.db.transaction(this.storeName, 'readonly');
       const store = tx.objectStore(this.storeName);
 
-      const videos = await store.getAll();
+      const videos: VideoDownload[] = await store.getAll();
       return videos;
     } catch (error) {
       console.error('Error getting data from IndexedDB:', error);

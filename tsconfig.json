@@ -14,9 +14,10 @@
   },
   "include": [
     "lib/**/*",
-    "index.ts",
-    "mux.js.d.ts"
-  ],
+    "examples/index.ts",
+    "mux.js.d.ts",
+    "index.d.ts"
+],
   "exclude": [
     "node_modules",
     "dist"

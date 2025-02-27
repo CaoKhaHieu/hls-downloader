@@ -10,3 +10,6 @@
   + hls.js
   + video.js
   + flv.js
+
+
+- note: reload, example, commitlint, prettier, eslint, readme.

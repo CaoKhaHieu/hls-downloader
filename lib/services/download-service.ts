@@ -1,7 +1,7 @@
 import axios from "axios";
 import { Parser } from "m3u8-parser";
 
-import { VideoDownload } from "./hls-downloader.d";
+import { VideoDownload } from "../../index.d";
 import IndexedDBService from "./indexeddb-service";
 
 class DownloadManager {
@@ -206,39 +206,6 @@ class DownloadManager {
   async cancel(idVideoIDB: string) {
     delete this.infoVideoDownload[idVideoIDB];
     await this.indexedDBService.delete(idVideoIDB);
-  }
-
-  // delete video
-  async deleteVideo(idVideoIDB: string) {
-    await this.indexedDBService.delete(idVideoIDB);
-  }
-
-  // get video
-  async getVideo(idVideoIDB: string) {
-    return await this.indexedDBService.get(idVideoIDB);
-  }
-
-  // get thumbnail video downloaded
-  async getThumbnailVideoDownloaded(idVideoIDB: string) {
-    const video = await this.indexedDBService.get(idVideoIDB);
-    if (!video?.thumbnail) {
-      return null;
-    }
-
-    const thumbnailUrl = URL.createObjectURL(
-      new Blob([video.thumbnail], { type: 'image/png' })
-    );
-    return thumbnailUrl;
-  }
-
-  // get all videos
-  async getAllVideos() {
-    return await this.indexedDBService.getAll();
-  }
-
-  // delete all videos
-  async deleteAllVideos() {
-    return await this.indexedDBService.deleteAll();
   }
 }
 
