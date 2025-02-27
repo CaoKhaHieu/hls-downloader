@@ -4,7 +4,7 @@ import { Parser } from "m3u8-parser";
 import { VideoDownload } from "../../index.d";
 import IndexedDBService from "./indexeddb-service";
 
-class DownloadManager {
+class DownloadService {
   private idVideoIDB: string;
   private progress: { [key: string]: number };
   private infoVideoDownload: { [key: string]: VideoDownload };
@@ -182,6 +182,10 @@ class DownloadManager {
 
   // pause download
   async pause(idVideoIDB: string) {
+    if (!this.infoVideoDownload[idVideoIDB]) {
+      return;
+    }
+
     // if the number of segments downloaded is equal to the total number of segments, return
     if (this.infoVideoDownload[idVideoIDB].arr.length === this.infoVideoDownload[idVideoIDB].totalSegments) {
       return;
@@ -193,6 +197,10 @@ class DownloadManager {
 
   // resume download
   async resume(idVideoIDB: string) {
+    if (!this.infoVideoDownload[idVideoIDB]) {
+      return;
+    }
+
     // if the number of segments downloaded is equal to the total number of segments, return
     if (this.infoVideoDownload[idVideoIDB].arr.length === this.infoVideoDownload[idVideoIDB].totalSegments) {
       return;
@@ -209,4 +217,4 @@ class DownloadManager {
   }
 }
 
-export default DownloadManager;
+export default DownloadService;

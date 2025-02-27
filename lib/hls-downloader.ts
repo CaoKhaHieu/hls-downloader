@@ -1,4 +1,4 @@
-import DownloadManager from "./services/download-service";
+import DownloadService from "./services/download-service";
 import IndexedDBService from "./services/indexeddb-service";
 import { HLSDownloadCallback, HLSOnProgressCallback, HLSDownloaderOptions } from "../index.d";
 
@@ -7,7 +7,7 @@ class HLSDownloader {
   private idVideoIDB: string;
   private thumbnail: string;
   private metadata: any;
-  private downloadManager: any;
+  private downloadService: any;
   private indexedDBService: IndexedDBService;
 
   private onSuccess: HLSDownloadCallback;
@@ -27,7 +27,7 @@ class HLSDownloader {
     this.onResume = options.onResume;
     this.onCancel = options.onCancel;
 
-    this.downloadManager = new DownloadManager();
+    this.downloadService = new DownloadService();
     this.indexedDBService = new IndexedDBService();
   }
 
@@ -38,7 +38,7 @@ class HLSDownloader {
   // start download
   async start() {
     console.log('Start downloading');
-    await this.downloadManager.start(
+    await this.downloadService.start(
       this.url,
       this.idVideoIDB,
       this.thumbnail,
@@ -51,7 +51,7 @@ class HLSDownloader {
   // pause download
   async pause() {
     console.log('Pause downloading');
-    await this.downloadManager.pause(this.idVideoIDB);
+    await this.downloadService.pause(this.idVideoIDB);
     if (this.onPause) {
       this.onPause();
     }
@@ -63,13 +63,13 @@ class HLSDownloader {
     if (this.onResume) {
       this.onResume();
     }
-    await this.downloadManager.resume(this.idVideoIDB);
+    await this.downloadService.resume(this.idVideoIDB);
   }
 
   // cancel download
   async cancel() {
     console.log('Cancel downloading');
-    await this.downloadManager.cancel(this.idVideoIDB);
+    await this.downloadService.cancel(this.idVideoIDB);
     if (this.onCancel) {
       this.onCancel();
     }

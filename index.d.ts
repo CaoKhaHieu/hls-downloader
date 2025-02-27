@@ -23,6 +23,4 @@ export interface HLSDownloaderOptions {
   onPause: HLSDownloadCallback;
   onResume: HLSDownloadCallback;
   onCancel: HLSDownloadCallback;
-  onDelete: HLSDownloadCallback;
-  onDeleteAll: HLSDownloadCallback;
 }

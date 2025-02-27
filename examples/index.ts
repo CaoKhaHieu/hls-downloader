@@ -25,7 +25,7 @@ const mergeListArrayBuffer = (myArrays: Uint8Array[]) => {
   ];
 
   const downloader = new HLSDownloader({
-    url: urls[1],
+    url: urls[0],
     idVideoIDB: '1',
     thumbnail: 'https://picsum.photos/536/354',
     metadata: {
@@ -48,12 +48,6 @@ const mergeListArrayBuffer = (myArrays: Uint8Array[]) => {
     },
     onCancel: () => {
       console.log('onCancel');
-    },
-    onDelete: () => {
-      console.log('onDelete');
-    },
-    onDeleteAll: () => {
-      console.log('onDeleteAll');
     }
   });
   const hlsManager = new HLSManager();
