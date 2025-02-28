@@ -12,15 +12,16 @@ interface VideoDownload {
   segments: string[];
 }
 
-// Interface cho constructor parameters
+// Interface cho constructor parameters of HLSDownloader
 export interface HLSDownloaderOptions {
   url: string;
   idVideoIDB: string;
-  thumbnail: string;
-  metadata: any;
-  onSuccess: HLSDownloadCallback;
-  onProgress: HLSOnProgressCallback;
-  onPause: HLSDownloadCallback;
-  onResume: HLSDownloadCallback;
-  onCancel: HLSDownloadCallback;
+  thumbnail?: string;
+  metadata?: any;
+  onSuccess?: HLSDownloadCallback;
+  onProgress?: HLSOnProgressCallback;
+  onPause?: HLSDownloadCallback;
+  onResume?: HLSDownloadCallback;
+  onCancel?: HLSDownloadCallback;
 }
+

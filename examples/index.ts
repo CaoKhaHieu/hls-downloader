@@ -18,10 +18,7 @@ const mergeListArrayBuffer = (myArrays: Uint8Array[]) => {
 
 (async () => {
   const urls = [
-    "https://vtvgo-vods.vtvdigital.vn/RTJC-PMXuacVrExErCl_Tw/1740628543/vod/20250222/nong-trua-22t2.mp4/index.m3u8",
-    "https://vtvgo-vods.vtvdigital.vn/of3wkYPedOwjEp6hK_77Sg/1740628756/vod/20250222/cd.mp4/index.m3u8",
-    "https://bitdash-a.akamaihd.net/content/sintel/hls/playlist.m3u8",
-    "https://bitdash-a.akamaihd.net/content/MI201109210084_1/m3u8s/f08e80da-bf1d-4e3d-8899-f0f6155f6efa.m3u8",
+    "https://vod02.cdn.web.tv/ps/fp/psfpskkrfpm_,240,360,.mp4.urlset/master.m3u8"
   ];
 
   const downloader = new HLSDownloader({

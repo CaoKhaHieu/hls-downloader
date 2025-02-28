@@ -19,13 +19,13 @@ class HLSDownloader {
   constructor(options: HLSDownloaderOptions) {
     this.url = options.url;
     this.idVideoIDB = options.idVideoIDB;
-    this.thumbnail = options.thumbnail;
+    this.thumbnail = options.thumbnail || '';
     this.metadata = options.metadata;
-    this.onSuccess = options.onSuccess;
-    this.onProgress = options.onProgress;
-    this.onPause = options.onPause;
-    this.onResume = options.onResume;
-    this.onCancel = options.onCancel;
+    this.onSuccess = options.onSuccess || (() => {});
+    this.onProgress = options.onProgress || (() => {});
+    this.onPause = options.onPause || (() => {});
+    this.onResume = options.onResume || (() => {});
+    this.onCancel = options.onCancel || (() => {});
 
     this.downloadService = new DownloadService();
     this.indexedDBService = new IndexedDBService();
