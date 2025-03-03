@@ -9,12 +9,14 @@ import "video.js/dist/video-js.css";
 
 import muxjs from "mux.js";
 
+const urls = [
+  "https://vod02.cdn.web.tv/ps/fp/psfpskkrfpm_,240,360,.mp4.urlset/master.m3u8",
+  "https://vod.ottclouds.com/vods/9999/CcRxJOQgiwAFdpmYc7oezZM4Tvah7Lmp4/playlist.m3u8"
+];
+
 function App() {
   const [isInit, setIsInit] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [url, setUrl] = useState(
-    "https://vod02.cdn.web.tv/ps/fp/psfpskkrfpm_,240,360,.mp4.urlset/master.m3u8"
-  );
 
   const videoRef = useRef<any>(null);
   const playerRef = useRef<any>(null);
@@ -23,39 +25,15 @@ function App() {
   const transmuxer = new muxjs.mp4.Transmuxer();
   const mime = 'video/mp4; codecs="mp4a.40.2,avc1.64001f"';
 
-  const hlsDownloader = new HLSDownloader({
-    url,
-    idVideoIDB: "1",
-    thumbnail: "",
-    metadata: {
-      title: "Nong trua 22t2",
-      description: "Nong trua 22t2",
-      author: "Nong trua 22t2",
-      duration: 100,
-      thumbnail:
-        "https://vtvgo-vods.vtvdigital.vn/RTJC-PMXuacVrExErCl_Tw/1740628543/vod/20250222/nong-trua-22t2.mp4/index.m3u8",
+  const hlsDownloader = useRef<HLSDownloader>(new HLSDownloader({
+    onProgress: (_, progress) => {
+      setProgress(progress);
     },
-    onProgress: (data) => {
-      console.log(data);
-      setProgress(data.progress);
-    },
-    onSuccess: () => {
-      toast("Download success");
-    },
-    onPause: () => {
-      toast("Pause");
-    },
-    onResume: () => {
-      toast("Resume");
-    },
-    onCancel: () => {
-      toast("Cancel");
-    },
-  });
-  const hlsManager = new HLSManager();
+  }));
+  const hlsManager = useRef<HLSManager>(new HLSManager());
 
   useEffect(() => {
-    hlsDownloader.initIndexedDB().then(() => {
+    hlsDownloader.current.initIndexedDB().then(() => {
       setIsInit(true);
     });
   }, []);
@@ -89,7 +67,7 @@ function App() {
       return;
     }
     // init video download
-    hlsManager.getVideo("1").then((video) => {
+    hlsManager.current.getVideo("1").then((video) => {
       if (video && video.arr.length > 0) {
         const mergedArray = mergeListArrayBuffer([...video.arr]);
         const blob = URL.createObjectURL(mediaSource);
@@ -105,19 +83,33 @@ function App() {
   }, [isInit]);
 
   const handleDownload = () => {
-    hlsDownloader.start();
+    hlsDownloader.current.start({
+      url: urls[0],
+      idVideoIDB: "1",
+      thumbnail: "",
+      metadata: {
+        title: "Nong trua 22t2",
+        description: "Nong trua 22t2",
+      },
+      onSuccess: () => {
+        toast("Download success");
+      },
+      onError: () => {
+        toast("Download error");
+      },
+    });
   };
 
   const handlePause = () => {
-    hlsDownloader.pause();
+    hlsDownloader.current.pause("1");
   };
 
   const handleResume = () => {
-    hlsDownloader.resume();
+    hlsDownloader.current.resume("1");
   };
 
   const handleCancel = () => {
-    hlsDownloader.cancel();
+    hlsDownloader.current.cancel("1");
   };
 
   const appendSegments = (data: Uint8Array) => {
@@ -159,8 +151,7 @@ function App() {
       <div>
         <input
           type="text"
-          value={url}
-          onChange={(e) => setUrl(e.target.value)}
+          value={urls[0]}
           placeholder="Please enter the HLS url to download ..."
           style={{
             padding: "16px",

@@ -1,24 +1,28 @@
 import axios from "axios";
 import { Parser } from "m3u8-parser";
 
-import { VideoDownload } from "../../index.d";
+import { HLSDownloaderOptions, VideoDownload } from "../../index.d";
 import IndexedDBService from "./indexeddb-service";
 
 class DownloadService {
-  private idVideoIDB: string;
   private progress: { [key: string]: number };
   private infoVideoDownload: { [key: string]: VideoDownload };
   private indexedDBService: IndexedDBService;
-  private onProgress: (data: any) => void;
-  private onSuccess: () => void;
+  private onSuccess: (idVideoIDB: string) => void;
+  private onError: (idVideoIDB: string) => void;
+  private onProgress: (idVideoIDB: string, progress: number) => void;
 
-  constructor() {
-    this.idVideoIDB = '1';
+  constructor({
+    onProgress,
+  }: {
+    onProgress: (idVideoIDB: string, progress: number) => void;
+  }) {
     this.progress = {};
     this.infoVideoDownload = {};
     this.indexedDBService = new IndexedDBService();
-    this.onProgress = () => {};
     this.onSuccess = () => {};
+    this.onError = () => {};
+    this.onProgress = onProgress;
   }
 
   // fetch thumbnail from url and return Uint8Array
@@ -52,7 +56,7 @@ class DownloadService {
       const position2 = m3u8Url.indexOf(".m3u8");
       const baseURL2 = m3u8Url.substring(
         0,
-        m3u8Url.lastIndexOf("/", position2)
+        m3u8Url.lastIndexOf("/", position2) 
       );
 
       const response2 = await axios.get(m3u8Url);
@@ -77,14 +81,10 @@ class DownloadService {
   }
 
   // create a promise fetch all segments from url
-  async fetchSegments(tsUrls: string[]) {
-    if (this.infoVideoDownload[this.idVideoIDB].arr.length > 0) {
-      tsUrls.splice(0, this.infoVideoDownload[this.idVideoIDB].arr.length);
-    }
-
+  async fetchSegments(tsUrls: string[], idVideoIDB: string) {
     for (const url of tsUrls) {
       try {
-        await this.fetchChunk(url);
+        await this.fetchChunk(url, idVideoIDB);
       } catch (error) {
         throw error;
       }
@@ -92,12 +92,12 @@ class DownloadService {
   }
 
   // fetch segment from url and return Uint8Array
-  async fetchChunk(url: string) {
+  async fetchChunk(url: string, idVideoIDB: string) {
     // check if the user is offline or the video is paused or the number of videos being downloaded is greater than the maximum
-    if (!navigator.onLine || !this.infoVideoDownload[this.idVideoIDB]) {
+    if (!navigator.onLine || !this.infoVideoDownload[idVideoIDB]) {
       return;
     }
-    if (this.infoVideoDownload[this.idVideoIDB].isPaused) {
+    if (this.infoVideoDownload[idVideoIDB].isPaused) {
       return;
     }
 
@@ -106,52 +106,50 @@ class DownloadService {
     const chunkData = new Uint8Array(response);
 
     // handle incase user fetch data successfully but user is cancel download
-    if (!this.infoVideoDownload[this.idVideoIDB]) {
+    if (!this.infoVideoDownload[idVideoIDB]) {
       return;
     }
 
     // save chunk data to info video download
-    this.infoVideoDownload[this.idVideoIDB].arr.push(chunkData);
+    this.infoVideoDownload[idVideoIDB].arr.push(chunkData);
 
     // update progress
     const currentProgress = Math.floor(
-      (this.infoVideoDownload[this.idVideoIDB].arr.length /
-        this.infoVideoDownload[this.idVideoIDB].totalSegments) *
+      (this.infoVideoDownload[idVideoIDB].arr.length /
+        this.infoVideoDownload[idVideoIDB].totalSegments) *
         100
     );
-    this.progress[this.idVideoIDB] = currentProgress;
-    if (this.onProgress) {
-      this.onProgress({ id: this.idVideoIDB, progress: currentProgress });
-    }
+    this.progress[idVideoIDB] = currentProgress;
+    this.onProgress(idVideoIDB, currentProgress);
 
     if (this.onSuccess && currentProgress === 100) {
-      this.onSuccess();
+      this.onSuccess(idVideoIDB);
     }
 
     // if the progress is greater than 100, return
     if (currentProgress > 100) {
       return;
     }
-    await this.indexedDBService.save(this.idVideoIDB, this.infoVideoDownload[this.idVideoIDB]);
+    await this.indexedDBService.save(idVideoIDB, this.infoVideoDownload[idVideoIDB]);
     return;
   }
 
   // start download
-  async start(url: string, idVideoIDB: string, thumbnail: string, metadata: any, onProgress: () => void, onSuccess: () => void) {
+  async start(data: HLSDownloaderOptions) {
+    const { url, idVideoIDB, thumbnail, metadata, onSuccess, onError } = data;
     // init info video download
     this.infoVideoDownload[idVideoIDB] = {
       url,
       isPaused: false,
       arr: [],
       totalSegments: 0,
-      thumbnail,
+      thumbnail: thumbnail || '',
       metadata,
       segments: [],
     };
-    this.idVideoIDB = idVideoIDB;
-    this.onProgress = onProgress;
-    this.onSuccess = onSuccess;
-
+    this.onSuccess = onSuccess || (() => {});
+    this.onError = onError || (() => {});
+    
     // init progress
     this.progress[idVideoIDB] = 0;
 
@@ -177,7 +175,7 @@ class DownloadService {
     // save info video download to indexedDB
     await this.indexedDBService.save(idVideoIDB, this.infoVideoDownload[idVideoIDB]);
 
-    await this.fetchSegments(tsUrls);
+    await this.fetchSegments(tsUrls, idVideoIDB);
   }
 
   // pause download
@@ -197,17 +195,26 @@ class DownloadService {
 
   // resume download
   async resume(idVideoIDB: string) {
+    // handle case resume download after reload page
     if (!this.infoVideoDownload[idVideoIDB]) {
-      return;
+      const video = await this.indexedDBService.get(idVideoIDB);
+      if (!video) {
+        return;
+      }
+      this.infoVideoDownload[idVideoIDB] = video;
     }
 
     // if the number of segments downloaded is equal to the total number of segments, return
     if (this.infoVideoDownload[idVideoIDB].arr.length === this.infoVideoDownload[idVideoIDB].totalSegments) {
       return;
     }
-    
+
+    const tsUrls = [...this.infoVideoDownload[idVideoIDB].segments];
+    if (this.infoVideoDownload[idVideoIDB].arr.length > 0) {
+      tsUrls.splice(0, this.infoVideoDownload[idVideoIDB].arr.length);
+    }
     this.infoVideoDownload[idVideoIDB].isPaused = false;
-    await this.fetchSegments(this.infoVideoDownload[idVideoIDB].segments);
+    await this.fetchSegments(tsUrls, idVideoIDB);
   }
 
   // cancel download

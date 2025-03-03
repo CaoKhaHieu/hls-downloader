@@ -1,33 +1,19 @@
 import DownloadService from "./services/download-service";
 import IndexedDBService from "./services/indexeddb-service";
-import { HLSDownloadCallback, HLSOnProgressCallback, HLSDownloaderOptions } from "../index.d";
+import { HLSDownloaderOptions } from "../index.d";
 
 class HLSDownloader {
-  private url: string;
-  private idVideoIDB: string;
-  private thumbnail: string;
-  private metadata: any;
-  private downloadService: any;
+  private downloadService: DownloadService;
   private indexedDBService: IndexedDBService;
+  private onProgress: (idVideoIDB: string, progress: number) => void;
 
-  private onSuccess: HLSDownloadCallback;
-  private onProgress: HLSOnProgressCallback;
-  private onPause: HLSDownloadCallback;
-  private onResume: HLSDownloadCallback;
-  private onCancel: HLSDownloadCallback;
-
-  constructor(options: HLSDownloaderOptions) {
-    this.url = options.url;
-    this.idVideoIDB = options.idVideoIDB;
-    this.thumbnail = options.thumbnail || '';
-    this.metadata = options.metadata;
-    this.onSuccess = options.onSuccess || (() => {});
-    this.onProgress = options.onProgress || (() => {});
-    this.onPause = options.onPause || (() => {});
-    this.onResume = options.onResume || (() => {});
-    this.onCancel = options.onCancel || (() => {});
-
-    this.downloadService = new DownloadService();
+  constructor({
+    onProgress,
+  }: {
+    onProgress: (idVideoIDB: string, progress: number) => void;
+  }) {
+    this.onProgress = onProgress;
+    this.downloadService = new DownloadService({ onProgress: this.onProgress });
     this.indexedDBService = new IndexedDBService();
   }
 
@@ -36,43 +22,27 @@ class HLSDownloader {
   }
 
   // start download
-  async start() {
+  async start(options: HLSDownloaderOptions) {
     console.log('Start downloading');
-    await this.downloadService.start(
-      this.url,
-      this.idVideoIDB,
-      this.thumbnail,
-      this.metadata,
-      this.onProgress,
-      this.onSuccess,
-    );
+    await this.downloadService.start(options);
   }
 
   // pause download
-  async pause() {
+  async pause(idVideoIDB: string) {
     console.log('Pause downloading');
-    await this.downloadService.pause(this.idVideoIDB);
-    if (this.onPause) {
-      this.onPause();
-    }
+    await this.downloadService.pause(idVideoIDB);
   }
 
   // resume download
-  async resume() {
+  async resume(idVideoIDB: string) {
     console.log('Resume downloading');
-    if (this.onResume) {
-      this.onResume();
-    }
-    await this.downloadService.resume(this.idVideoIDB);
+    await this.downloadService.resume(idVideoIDB);
   }
 
   // cancel download
-  async cancel() {
+  async cancel(idVideoIDB: string) {
     console.log('Cancel downloading');
-    await this.downloadService.cancel(this.idVideoIDB);
-    if (this.onCancel) {
-      this.onCancel();
-    }
+    await this.downloadService.cancel(idVideoIDB);
   }
 }
 

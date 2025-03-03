@@ -11,20 +11,28 @@ npm install hls-downloader
 import { HLSDownloader } from 'hls-downloader';
 
 const hlsDownloader = new HLSDownloader({
-  url: 'https://example.com/hls.m3u8',
+  onProgress: (idVideoIDB, progress) => {
+    console.log('onProgress', idVideoIDB, progress);
+  },
 });
 hlsDownloader.initIndexedDB().then(() => {
   // start download
-  hlsDownloader.start();
-
-  // pause download
-  hlsDownloader.pause();
+  hlsDownloader.start({
+    url: 'https://example.com/hls.m3u8',
+    idVideoIDB: '1',
+    thumbnail: 'https://picsum.photos/536/354',
+    metadata: {
+      title: 'The Lorem Ipsum for photos.',
+      description: 'The Lorem Ipsum for photos.',
+    },
+  });
+  hlsDownloader.pause('1');
 
   // resume download
-  hlsDownloader.resume();
+  hlsDownloader.resume('1');
 
   // cancel download
-  hlsDownloader.cancel();
+  hlsDownloader.cancel('1');
 });
 ```
 
