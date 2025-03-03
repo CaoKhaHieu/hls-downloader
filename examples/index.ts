@@ -18,61 +18,71 @@ const mergeListArrayBuffer = (myArrays: Uint8Array[]) => {
 
 (async () => {
   const urls = [
-    "https://vod02.cdn.web.tv/ps/fp/psfpskkrfpm_,240,360,.mp4.urlset/master.m3u8"
+    "https://vod02.cdn.web.tv/ps/fp/psfpskkrfpm_,240,360,.mp4.urlset/master.m3u8",
+    "https://vod.ottclouds.com/vods/9999/CcRxJOQgiwAFdpmYc7oezZM4Tvah7Lmp4/playlist.m3u8"
   ];
 
-  const downloader = new HLSDownloader({
-    url: urls[0],
-    idVideoIDB: '1',
-    thumbnail: 'https://picsum.photos/536/354',
-    metadata: {
-      title: 'The Lorem Ipsum for photos.',
-      description: 'The Lorem Ipsum for photos.',
-      category: 'The Lorem Ipsum for photos.',
-      tags: ['video', 'hls', 'download'],
-    },
-    onSuccess: () => {
-      console.log('onSuccess');
-    },
-    onProgress: (data) => {
-      console.log('onProgress', data);
-    },
-    onPause: () => {
-      console.log('onPause');
-    },
-    onResume: () => {
-      console.log('onResume');
-    },
-    onCancel: () => {
-      console.log('onCancel');
-    }
-  });
+  const downloader = new HLSDownloader();
   const hlsManager = new HLSManager();
   await downloader.initIndexedDB();
 
   const startButton = document.getElementById('start');
+  const startButton2 = document.getElementById('start2');
   const pauseButton = document.getElementById('pause');
   const resumeButton = document.getElementById('resume');
   const cancelButton = document.getElementById('cancel');
   const deleteButton = document.getElementById('delete');
   const deleteAllButton = document.getElementById('delete-all');
 
-  if (!startButton || !pauseButton || !resumeButton || !cancelButton || 
+  if (!startButton || !startButton2 || !pauseButton || !resumeButton || !cancelButton || 
       !deleteButton || !deleteAllButton) {
     console.error('Required DOM elements not found');
     return;
   }
 
   // add event listener to start download
-  startButton.addEventListener('click', () => downloader.start());
-  pauseButton.addEventListener('click', () => downloader.pause());
-  resumeButton.addEventListener('click', () => downloader.resume());
-  cancelButton.addEventListener('click', () => downloader.cancel());
-  deleteButton.addEventListener('click', () => hlsManager.deleteVideo('1'));
+  startButton.addEventListener('click', () => {
+    downloader.start({
+      url: urls[0],
+      idVideoIDB: '1',
+      thumbnail: 'https://picsum.photos/536/354',
+      metadata: {
+        title: 'The Lorem Ipsum for photos.', 
+        description: 'The Lorem Ipsum for photos.',
+      },
+      onSuccess: (data) => {
+        console.log('onSuccess', data);
+      },
+      onError: () => {
+        console.log('onError');
+      },
+    });
+  });
+  startButton2.addEventListener('click', () => {
+    downloader.start({
+      url: urls[1],
+      idVideoIDB: '2',
+      thumbnail: 'https://picsum.photos/536/354',
+      metadata: {
+        title: 'The Lorem Ipsum for photos.', 
+        description: 'The Lorem Ipsum for photos.',
+      },
+      onSuccess: (data) => {
+        console.log('onSuccess', data);
+      },
+      onError: () => {
+        console.log('onError');
+      },
+    });
+  });
+  pauseButton.addEventListener('click', () => downloader.pause('2'));
+  resumeButton.addEventListener('click', () => downloader.resume('2'));
+  cancelButton.addEventListener('click', () => downloader.cancel('2'));
+  deleteButton.addEventListener('click', () => hlsManager.deleteVideo('2'));
   deleteAllButton.addEventListener('click', () => hlsManager.deleteAllVideos());
 
   // get videos
-  const video = await hlsManager.getVideo('1');
+  const video = await hlsManager.getVideo('2');
   const videos = await hlsManager.getAllVideos();
   console.log({ video, videos })
   if (!video) {

@@ -1,5 +1,4 @@
-type HLSDownloadCallback = () => void;
-type HLSOnProgressCallback = (data: any) => void;
+type HLSDownloadCallback = (data: any) => void;
 
 // Interface cho video download
 interface VideoDownload {
@@ -19,9 +18,6 @@ export interface HLSDownloaderOptions {
   thumbnail?: string;
   metadata?: any;
   onSuccess?: HLSDownloadCallback;
-  onProgress?: HLSOnProgressCallback;
-  onPause?: HLSDownloadCallback;
-  onResume?: HLSDownloadCallback;
-  onCancel?: HLSDownloadCallback;
+  onError?: HLSDownloadCallback;
 }
 
