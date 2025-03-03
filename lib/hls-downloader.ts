@@ -5,9 +5,15 @@ import { HLSDownloaderOptions } from "../index.d";
 class HLSDownloader {
   private downloadService: DownloadService;
   private indexedDBService: IndexedDBService;
+  private onProgress: (idVideoIDB: string, progress: number) => void;
 
-  constructor() {
-    this.downloadService = new DownloadService();
+  constructor({
+    onProgress,
+  }: {
+    onProgress: (idVideoIDB: string, progress: number) => void;
+  }) {
+    this.onProgress = onProgress;
+    this.downloadService = new DownloadService({ onProgress: this.onProgress });
     this.indexedDBService = new IndexedDBService();
   }
 

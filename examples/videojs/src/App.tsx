@@ -25,7 +25,11 @@ function App() {
   const transmuxer = new muxjs.mp4.Transmuxer();
   const mime = 'video/mp4; codecs="mp4a.40.2,avc1.64001f"';
 
-  const hlsDownloader = useRef<HLSDownloader>(new HLSDownloader());
+  const hlsDownloader = useRef<HLSDownloader>(new HLSDownloader({
+    onProgress: (_, progress) => {
+      setProgress(progress);
+    },
+  }));
   const hlsManager = useRef<HLSManager>(new HLSManager());
 
   useEffect(() => {
@@ -82,22 +86,6 @@ function App() {
     hlsDownloader.current.start({
       url: urls[0],
       idVideoIDB: "1",
-      thumbnail: "",
-      metadata: {
-        title: "Nong trua 22t2",
-        description: "Nong trua 22t2",
-      },
-      onSuccess: () => {
-        toast("Download success");
-      },
-      onError: () => {
-        toast("Download error");
-      },
-    });
-
-    hlsDownloader.current.start({
-      url: urls[1],
-      idVideoIDB: "2",
       thumbnail: "",
       metadata: {
         title: "Nong trua 22t2",

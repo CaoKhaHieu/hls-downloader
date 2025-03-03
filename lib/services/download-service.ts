@@ -10,13 +10,19 @@ class DownloadService {
   private indexedDBService: IndexedDBService;
   private onSuccess: (idVideoIDB: string) => void;
   private onError: (idVideoIDB: string) => void;
+  private onProgress: (idVideoIDB: string, progress: number) => void;
 
-  constructor() {
+  constructor({
+    onProgress,
+  }: {
+    onProgress: (idVideoIDB: string, progress: number) => void;
+  }) {
     this.progress = {};
     this.infoVideoDownload = {};
     this.indexedDBService = new IndexedDBService();
     this.onSuccess = () => {};
     this.onError = () => {};
+    this.onProgress = onProgress;
   }
 
   // fetch thumbnail from url and return Uint8Array
@@ -50,7 +56,7 @@ class DownloadService {
       const position2 = m3u8Url.indexOf(".m3u8");
       const baseURL2 = m3u8Url.substring(
         0,
-        m3u8Url.lastIndexOf("/", position2)
+        m3u8Url.lastIndexOf("/", position2) 
       );
 
       const response2 = await axios.get(m3u8Url);
@@ -114,7 +120,7 @@ class DownloadService {
         100
     );
     this.progress[idVideoIDB] = currentProgress;
-    console.log(`idVideoIDB: ${idVideoIDB} - progress: ${currentProgress}%`)
+    this.onProgress(idVideoIDB, currentProgress);
 
     if (this.onSuccess && currentProgress === 100) {
       this.onSuccess(idVideoIDB);

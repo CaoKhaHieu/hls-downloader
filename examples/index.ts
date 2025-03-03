@@ -22,7 +22,11 @@ const mergeListArrayBuffer = (myArrays: Uint8Array[]) => {
     "https://vod.ottclouds.com/vods/9999/CcRxJOQgiwAFdpmYc7oezZM4Tvah7Lmp4/playlist.m3u8"
   ];
 
-  const downloader = new HLSDownloader();
+  const downloader = new HLSDownloader({
+    onProgress: (idVideoIDB: string, progress: number) => {
+      console.log('onProgress', idVideoIDB, progress);
+    }
+  });
   const hlsManager = new HLSManager();
   await downloader.initIndexedDB();
 
