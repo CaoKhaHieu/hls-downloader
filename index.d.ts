@@ -17,7 +17,10 @@ export interface HLSDownloaderOptions {
   idVideoIDB: string;
   thumbnail?: string;
   metadata?: any;
-  onSuccess?: HLSDownloadCallback;
-  onError?: HLSDownloadCallback;
 }
 
+export interface HLSDownloaderCallback {
+  onProgress: (idVideoIDB: string, progress: number) => void;
+  onSuccess: (idVideoIDB: string) => void;
+  onError: (error: Error) => void;
+}

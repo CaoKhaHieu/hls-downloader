@@ -1,19 +1,27 @@
 import DownloadService from "./services/download-service";
 import IndexedDBService from "./services/indexeddb-service";
-import { HLSDownloaderOptions } from "../index.d";
+import { HLSDownloaderCallback, HLSDownloaderOptions } from "../index.d";
 
 class HLSDownloader {
   private downloadService: DownloadService;
   private indexedDBService: IndexedDBService;
   private onProgress: (idVideoIDB: string, progress: number) => void;
+  private onSuccess: (idVideoIDB: string) => void;
+  private onError: (error: Error) => void;
 
   constructor({
     onProgress,
-  }: {
-    onProgress: (idVideoIDB: string, progress: number) => void;
-  }) {
+    onSuccess,
+    onError,
+  }: HLSDownloaderCallback) {
     this.onProgress = onProgress;
-    this.downloadService = new DownloadService({ onProgress: this.onProgress });
+    this.onSuccess = onSuccess;
+    this.onError = onError;
+    this.downloadService = new DownloadService({
+      onProgress: this.onProgress,
+      onSuccess: this.onSuccess,
+      onError: this.onError,
+    });
     this.indexedDBService = new IndexedDBService();
   }
 

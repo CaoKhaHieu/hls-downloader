@@ -1,7 +1,7 @@
 import axios from "axios";
 import { Parser } from "m3u8-parser";
 
-import { HLSDownloaderOptions, VideoDownload } from "../../index.d";
+import { HLSDownloaderCallback, HLSDownloaderOptions, VideoDownload } from "../../index.d";
 import IndexedDBService from "./indexeddb-service";
 
 class DownloadService {
@@ -9,20 +9,20 @@ class DownloadService {
   private infoVideoDownload: { [key: string]: VideoDownload };
   private indexedDBService: IndexedDBService;
   private onSuccess: (idVideoIDB: string) => void;
-  private onError: (idVideoIDB: string) => void;
+  private onError: (error: Error) => void;
   private onProgress: (idVideoIDB: string, progress: number) => void;
 
   constructor({
     onProgress,
-  }: {
-    onProgress: (idVideoIDB: string, progress: number) => void;
-  }) {
+    onSuccess,
+    onError,
+  }: HLSDownloaderCallback) {
     this.progress = {};
     this.infoVideoDownload = {};
     this.indexedDBService = new IndexedDBService();
-    this.onSuccess = () => {};
-    this.onError = () => {};
-    this.onProgress = onProgress;
+    this.onSuccess = onSuccess || (() => {});
+    this.onError = onError || (() => {});
+    this.onProgress = onProgress || (() => {});
   }
 
   // fetch thumbnail from url and return Uint8Array
@@ -33,6 +33,7 @@ class DownloadService {
       const uint8Array = new Uint8Array(arrayBuffer);
       return uint8Array;
     } catch (error) {
+      this.onError(error as Error);
       return null;
     }
   }
@@ -42,46 +43,54 @@ class DownloadService {
     const position = urlVideo.indexOf(".m3u8");
     const baseURL = urlVideo.substring(0, urlVideo.lastIndexOf("/", position));
 
-    const response = await axios.get(urlVideo);
-    const playlistContent = response.data;
+    try {
+      const response = await axios.get(urlVideo);
+      const playlistContent = response.data;
 
-    const parser: any = new Parser();
-    parser.push(playlistContent);
-    parser.end();
+      const parser: any = new Parser();
+      parser.push(playlistContent);
+      parser.end();
 
-    if (parser.manifest.playlists?.length && parser.manifest.playlists.length > 0) {
-      const m3u8Endpoint = parser.manifest?.playlists[0]?.uri;
-      const m3u8Url = `${baseURL}/${m3u8Endpoint}`;
+      if (parser.manifest.playlists?.length && parser.manifest.playlists.length > 0) {
+        const m3u8Endpoint = parser.manifest?.playlists[0]?.uri;
+        const m3u8Url = `${baseURL}/${m3u8Endpoint}`;
 
-      const position2 = m3u8Url.indexOf(".m3u8");
-      const baseURL2 = m3u8Url.substring(
-        0,
-        m3u8Url.lastIndexOf("/", position2) 
-      );
+        const position2 = m3u8Url.indexOf(".m3u8");
+        const baseURL2 = m3u8Url.substring(
+          0,
+          m3u8Url.lastIndexOf("/", position2) 
+        );
 
-      const response2 = await axios.get(m3u8Url);
-      const parser2 = new Parser();
-      parser2.push(response2.data);
-      parser2.end();
+        const response2 = await axios.get(m3u8Url);
+        const parser2 = new Parser();
+        parser2.push(response2.data);
+        parser2.end();
 
-      const fullUrls = parser2.manifest.segments.map((segment) => {
-        const segmentUri = baseURL2 + "/" + segment.uri;
-        return segmentUri;
-      });
-      return fullUrls;
-    }
+        const fullUrls = parser2.manifest.segments.map((segment) => {
+          const segmentUri = baseURL2 + "/" + segment.uri;
+          return segmentUri;
+        });
+        return fullUrls;
+      }
 
-    if (parser.manifest.segments.length > 0) {
-      const fullUrls = parser.manifest.segments.map((segment: any) => {
-        const segmentUri = baseURL + "/" + segment.uri;
-        return segmentUri;
-      });
-      return fullUrls;
+      if (parser.manifest.segments.length > 0) {
+        const fullUrls = parser.manifest.segments.map((segment: any) => {
+          const segmentUri = baseURL + "/" + segment.uri;
+          return segmentUri;
+        });
+        return fullUrls;
+      }
+    } catch (error) {
+      this.onError(error as Error);
     }
   }
 
   // create a promise fetch all segments from url
   async fetchSegments(tsUrls: string[], idVideoIDB: string) {
+    if (!tsUrls || tsUrls.length === 0) {
+      this.onError(new Error("No segments found"));
+      return;
+    }
     for (const url of tsUrls) {
       try {
         await this.fetchChunk(url, idVideoIDB);
@@ -101,42 +110,46 @@ class DownloadService {
       return;
     }
 
-    // fetch segment from url
-    const response = await (await fetch(url)).arrayBuffer();
-    const chunkData = new Uint8Array(response);
+    try {
+      // fetch segment from url
+      const response = await (await fetch(url)).arrayBuffer();
+      const chunkData = new Uint8Array(response);
 
-    // handle incase user fetch data successfully but user is cancel download
-    if (!this.infoVideoDownload[idVideoIDB]) {
+      // handle incase user fetch data successfully but user is cancel download
+      if (!this.infoVideoDownload[idVideoIDB]) {
+        return;
+      }
+
+      // save chunk data to info video download
+      this.infoVideoDownload[idVideoIDB].arr.push(chunkData);
+
+      // update progress
+      const currentProgress = Math.floor(
+        (this.infoVideoDownload[idVideoIDB].arr.length /
+          this.infoVideoDownload[idVideoIDB].totalSegments) *
+          100
+      );
+      this.progress[idVideoIDB] = currentProgress;
+      this.onProgress(idVideoIDB, currentProgress);
+
+      if (this.onSuccess && currentProgress === 100) {
+        this.onSuccess(idVideoIDB);
+      }
+
+      // if the progress is greater than 100, return
+      if (currentProgress > 100) {
+        return;
+      }
+      await this.indexedDBService.save(idVideoIDB, this.infoVideoDownload[idVideoIDB]);
       return;
+    } catch (error) {
+      this.onError(error as Error);
     }
-
-    // save chunk data to info video download
-    this.infoVideoDownload[idVideoIDB].arr.push(chunkData);
-
-    // update progress
-    const currentProgress = Math.floor(
-      (this.infoVideoDownload[idVideoIDB].arr.length /
-        this.infoVideoDownload[idVideoIDB].totalSegments) *
-        100
-    );
-    this.progress[idVideoIDB] = currentProgress;
-    this.onProgress(idVideoIDB, currentProgress);
-
-    if (this.onSuccess && currentProgress === 100) {
-      this.onSuccess(idVideoIDB);
-    }
-
-    // if the progress is greater than 100, return
-    if (currentProgress > 100) {
-      return;
-    }
-    await this.indexedDBService.save(idVideoIDB, this.infoVideoDownload[idVideoIDB]);
-    return;
   }
 
   // start download
   async start(data: HLSDownloaderOptions) {
-    const { url, idVideoIDB, thumbnail, metadata, onSuccess, onError } = data;
+    const { url, idVideoIDB, thumbnail, metadata } = data;
     // init info video download
     this.infoVideoDownload[idVideoIDB] = {
       url,
@@ -147,8 +160,6 @@ class DownloadService {
       metadata,
       segments: [],
     };
-    this.onSuccess = onSuccess || (() => {});
-    this.onError = onError || (() => {});
     
     // init progress
     this.progress[idVideoIDB] = 0;
@@ -156,9 +167,10 @@ class DownloadService {
     // save thumbnail to indexedDB
     if (thumbnail) {
       const thumbnailUint8Array = await this.fetchThumbnail(thumbnail);
-      if (thumbnailUint8Array) {
-        this.infoVideoDownload[idVideoIDB].thumbnail = thumbnailUint8Array;
+      if (!thumbnailUint8Array) {
+        return;
       }
+      this.infoVideoDownload[idVideoIDB].thumbnail = thumbnailUint8Array;
     }
 
     // save info video download to indexedDB

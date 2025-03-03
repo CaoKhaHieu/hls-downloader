@@ -29,6 +29,12 @@ function App() {
     onProgress: (_, progress) => {
       setProgress(progress);
     },
+    onSuccess: () => {
+      toast("Download success");
+    },
+    onError: () => {
+      toast("Download error");
+    },
   }));
   const hlsManager = useRef<HLSManager>(new HLSManager());
 
@@ -90,12 +96,6 @@ function App() {
       metadata: {
         title: "Nong trua 22t2",
         description: "Nong trua 22t2",
-      },
-      onSuccess: () => {
-        toast("Download success");
-      },
-      onError: () => {
-        toast("Download error");
       },
     });
   };

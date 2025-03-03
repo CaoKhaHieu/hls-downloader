@@ -25,7 +25,13 @@ const mergeListArrayBuffer = (myArrays: Uint8Array[]) => {
   const downloader = new HLSDownloader({
     onProgress: (idVideoIDB: string, progress: number) => {
       console.log('onProgress', idVideoIDB, progress);
-    }
+    },
+    onSuccess: (idVideoIDB: string) => {
+      console.log('onSuccess', idVideoIDB);
+    },
+    onError: (error: Error) => {
+      console.log('onError', error);
+    },
   });
   const hlsManager = new HLSManager();
   await downloader.initIndexedDB();
@@ -47,19 +53,13 @@ const mergeListArrayBuffer = (myArrays: Uint8Array[]) => {
   // add event listener to start download
   startButton.addEventListener('click', () => {
     downloader.start({
-      url: urls[0],
+      url: urls[1],
       idVideoIDB: '1',
       thumbnail: 'https://picsum.photos/536/354',
       metadata: {
         title: 'The Lorem Ipsum for photos.', 
         description: 'The Lorem Ipsum for photos.',
-      },
-      onSuccess: (data) => {
-        console.log('onSuccess', data);
-      },
-      onError: () => {
-        console.log('onError');
-      },
+      }
     });
   });
   startButton2.addEventListener('click', () => {
@@ -70,13 +70,7 @@ const mergeListArrayBuffer = (myArrays: Uint8Array[]) => {
       metadata: {
         title: 'The Lorem Ipsum for photos.', 
         description: 'The Lorem Ipsum for photos.',
-      },
-      onSuccess: (data) => {
-        console.log('onSuccess', data);
-      },
-      onError: () => {
-        console.log('onError');
-      },
+      }
     });
   });
   pauseButton.addEventListener('click', () => downloader.pause('2'));
@@ -88,7 +82,6 @@ const mergeListArrayBuffer = (myArrays: Uint8Array[]) => {
   // get videos
   const video = await hlsManager.getVideo('2');
   const videos = await hlsManager.getAllVideos();
-  console.log({ video, videos })
   if (!video) {
     return;
   }

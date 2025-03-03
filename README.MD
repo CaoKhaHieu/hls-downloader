@@ -14,17 +14,23 @@ const hlsDownloader = new HLSDownloader({
   onProgress: (idVideoIDB, progress) => {
     console.log('onProgress', idVideoIDB, progress);
   },
+  onSuccess: (idVideoIDB) => {
+    console.log('onSuccess', idVideoIDB);
+  },
+  onError: (error) => {
+    console.log('onError', error);
+  }
 });
 hlsDownloader.initIndexedDB().then(() => {
   // start download
   hlsDownloader.start({
-    url: 'https://example.com/hls.m3u8',
-    idVideoIDB: '1',
-    thumbnail: 'https://picsum.photos/536/354',
-    metadata: {
-      title: 'The Lorem Ipsum for photos.',
+    url: 'https://example.com/hls.m3u8', // url of hls stream
+    idVideoIDB: '1', // id of video in indexedDB
+    thumbnail: 'https://picsum.photos/536/354', // thumbnail of video
+    metadata: { // metadata of video
+      title: 'The Lorem Ipsum for photos.'
       description: 'The Lorem Ipsum for photos.',
-    },
+    }
   });
   hlsDownloader.pause('1');
 
@@ -43,41 +49,39 @@ import { HLSManager } from 'hls-downloader';
 const hlsManager = new HLSManager();
 
 // get all videos 
-hlsManager.getAllVideos();
+hlsManager.getAllVideos().then((data) => {
+  console.log('data', data);
+});
 
 // get videos downloaded
-hlsManager.getAllVideosDownloaded();  
+hlsManager.getAllVideosDownloaded().then((data) => {
+  console.log('data', data);
+});
 
 // get videos downloading
-hlsManager.getAllVideosDownloading();
+hlsManager.getAllVideosDownloading().then((data) => {
+  console.log('data', data);
+});
 
 // delete all videos
-hlsManager.deleteAllVideos();
+hlsManager.deleteAllVideos().then((data) => {
+  console.log('data', data);
+});
 
 // delete video
-hlsManager.deleteVideo(idVideoIDB: string);
+hlsManager.deleteVideo(idVideoIDB: string).then((data) => {
+  console.log('data', data);
+});
 
 // get video
-hlsManager.getVideo(idVideoIDB: string);
+hlsManager.getVideo(idVideoIDB: string).then((data) => {
+  console.log('data', data);
+});
 
 // get thumbnail video downloaded
-hlsManager.getThumbnailVideoDownloaded(idVideoIDB: string);
-
-```
-
-## Parameters of HLSDownloader
-```ts
-export interface HLSDownloaderOptions {
-  url: string; // url of hls stream
-  idVideoIDB: string; // id of video in indexedDB
-  thumbnail?: string; // thumbnail of video
-  metadata?: any; // metadata of video
-  onSuccess?: HLSDownloadCallback; // callback when download success
-  onProgress?: HLSOnProgressCallback; // callback when download progress
-  onPause?: HLSDownloadCallback; // callback when download pause
-  onResume?: HLSDownloadCallback; // callback when download resume
-  onCancel?: HLSDownloadCallback; // callback when download cancel
-}
+hlsManager.getThumbnailVideoDownloaded(idVideoIDB: string).then((data) => {
+  console.log('data', data);
+});
 ```
 
 ## Local Development
