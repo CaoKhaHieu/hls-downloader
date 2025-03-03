@@ -28,7 +28,7 @@ hlsDownloader.initIndexedDB().then(() => {
     idVideoIDB: '1', // id of video in indexedDB
     thumbnail: 'https://picsum.photos/536/354', // thumbnail of video
     metadata: { // metadata of video
-      title: 'The Lorem Ipsum for photos.'
+      title: 'The Lorem Ipsum for photos.',
       description: 'The Lorem Ipsum for photos.',
     }
   });
