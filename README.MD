@@ -103,3 +103,6 @@ Contributions are welcome! Please open an issue or submit a pull request.
 ## License
 
 This project is licensed under the ISC License. See the [LICENSE](LICENSE) file for details.
+
+## Support
+[!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://buymeacoffee.com/caokhahieut)
