@@ -2,13 +2,13 @@
 
 ## Install
 ```bash
-npm install hls-downloader
+npm i @caokhahieu/hls-downloader
 ```
 
 ## Usage
 - Download HLS Stream
 ```ts
-import { HLSDownloader } from 'hls-downloader';
+import { HLSDownloader } from '@caokhahieu/hls-downloader';
 
 const hlsDownloader = new HLSDownloader({
   onProgress: (idVideoIDB, progress) => {
@@ -44,7 +44,7 @@ hlsDownloader.initIndexedDB().then(() => {
 
 - Manage HLS Video in IndexedDB
 ```ts
-import { HLSManager } from 'hls-downloader';
+import { HLSManager } from '@caokhahieu/hls-downloader';
 
 const hlsManager = new HLSManager();
 

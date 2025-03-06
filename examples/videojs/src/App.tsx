@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import "./App.css";
 
-import { HLSDownloader, HLSManager, VideoDownload } from "hls-downloader";
+import { HLSDownloader, HLSManager, VideoDownload } from "@caokhahieu/hls-downloader";
 import { Toaster, toast } from "sonner";
 
 import videojs from "video.js";
