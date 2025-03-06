@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import "./App.css";
 
-import { HLSDownloader, HLSManager } from "../../../lib/index";
+import { HLSDownloader, HLSManager, VideoDownload } from "hls-downloader";
 import { Toaster, toast } from "sonner";
 
 import videojs from "video.js";
@@ -26,7 +26,7 @@ function App() {
   const mime = 'video/mp4; codecs="mp4a.40.2,avc1.64001f"';
 
   const hlsDownloader = useRef<HLSDownloader>(new HLSDownloader({
-    onProgress: (_, progress) => {
+    onProgress: (idVideoIDB: string, progress: number) => {
       setProgress(progress);
     },
     onSuccess: () => {
@@ -73,7 +73,7 @@ function App() {
       return;
     }
     // init video download
-    hlsManager.current.getVideo("1").then((video) => {
+    hlsManager.current.getVideo("1").then((video: VideoDownload) => {
       if (video && video.arr.length > 0) {
         const mergedArray = mergeListArrayBuffer([...video.arr]);
         const blob = URL.createObjectURL(mediaSource);

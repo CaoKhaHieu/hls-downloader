@@ -1,4 +1,5 @@
-import HLSDownloader from "./hls-downloader";
-import HLSManager from "./hls-manager";
+import HLSDownloaderClass from './hls-downloader';
+import HLSManagerClass from './hls-manager';
 
-export { HLSDownloader, HLSManager };
+export const HLSDownloader = HLSDownloaderClass;
+export const HLSManager = HLSManagerClass;
