@@ -1,6 +1,6 @@
 {
   "name": "@caokhahieu/hls-downloader",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "HLS Downloader - Download and play HLS videos offline with seamless playback support.",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
