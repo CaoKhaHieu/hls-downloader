@@ -32,6 +32,8 @@ hlsDownloader.initIndexedDB().then(() => {
       description: 'The Lorem Ipsum for photos.',
     }
   });
+
+  // pause download
   hlsDownloader.pause('1');
 
   // resume download
