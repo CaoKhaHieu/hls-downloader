@@ -26,11 +26,12 @@ function App() {
   const mime = 'video/mp4; codecs="mp4a.40.2,avc1.64001f"';
 
   const hlsDownloader = useRef<HLSDownloader>(new HLSDownloader({
-    onProgress: (idVideoIDB: string, progress: number) => {
+    onProgress: (_: string, progress: number) => {
       setProgress(progress);
     },
     onSuccess: () => {
       toast("Download success");
+      window.location.reload();
     },
     onError: () => {
       toast("Download error");
@@ -41,6 +42,11 @@ function App() {
   useEffect(() => {
     hlsDownloader.current.initIndexedDB().then(() => {
       setIsInit(true);
+
+      hlsManager.current.getVideo('1').then((video: VideoDownload) => {
+        const progress = Math.floor(video.arr.length / video.totalSegments * 100);
+        setProgress(progress);
+      });
     });
   }, []);
 
@@ -89,6 +95,7 @@ function App() {
   }, [isInit]);
 
   const handleDownload = () => {
+    toast("Start");
     hlsDownloader.current.start({
       url: urls[0],
       idVideoIDB: "1",
@@ -101,15 +108,20 @@ function App() {
   };
 
   const handlePause = () => {
+    toast("Pause");
     hlsDownloader.current.pause("1");
   };
 
   const handleResume = () => {
+    toast("Resume");
     hlsDownloader.current.resume("1");
   };
 
   const handleCancel = () => {
-    hlsDownloader.current.cancel("1");
+    toast("Cancel");
+    hlsDownloader.current.cancel("1").then(() => {
+      window.location.reload();
+    });
   };
 
   const appendSegments = (data: Uint8Array) => {
