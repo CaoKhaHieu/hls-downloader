@@ -19,7 +19,6 @@ const mergeListArrayBuffer = (myArrays: Uint8Array[]) => {
 (async () => {
   const urls = [
     "https://vod02.cdn.web.tv/ps/fp/psfpskkrfpm_,240,360,.mp4.urlset/master.m3u8",
-    "https://vod.ottclouds.com/vods/9999/CcRxJOQgiwAFdpmYc7oezZM4Tvah7Lmp4/playlist.m3u8"
   ];
 
   const downloader = new HLSDownloader({
@@ -53,7 +52,7 @@ const mergeListArrayBuffer = (myArrays: Uint8Array[]) => {
   // add event listener to start download
   startButton.addEventListener('click', () => {
     downloader.start({
-      url: urls[1],
+      url: urls[0],
       idVideoIDB: '1',
       thumbnail: 'https://picsum.photos/536/354',
       metadata: {
@@ -64,7 +63,7 @@ const mergeListArrayBuffer = (myArrays: Uint8Array[]) => {
   });
   startButton2.addEventListener('click', () => {
     downloader.start({
-      url: urls[1],
+      url: urls[0],
       idVideoIDB: '2',
       thumbnail: 'https://picsum.photos/536/354',
       metadata: {
